@@ -30,6 +30,9 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
     'Energetic': '✨',
   };
 
+  String? _currentDetectedLabel;
+  double _currentConfidence = 0.0;
+
   @override
   void initState() {
     super.initState();
@@ -63,7 +66,7 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
 
     _cameraController = CameraController(
       frontCamera,
-      ResolutionPreset.high,
+      ResolutionPreset.medium,
       enableAudio: false,
     );
 
@@ -71,10 +74,32 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
       await _cameraController!.initialize();
       if (mounted) {
         setState(() => _isCameraInitialized = true);
+        _startImageStream();
       }
     } catch (e) {
       debugPrint("Camera init error: $e");
     }
+  }
+
+  void _startImageStream() {
+    int frameCount = 0;
+    _cameraController!.startImageStream((image) async {
+      frameCount++;
+      if (frameCount % 10 == 0) { // Run inference every 10 frames
+        final results = await _aiController.runInferenceOnFrame(image);
+        if (results != null && results.isNotEmpty && mounted) {
+          setState(() {
+            _currentDetectedLabel = results[0]['label'];
+            _currentConfidence = results[0]['confidence'];
+          });
+        } else if (mounted) {
+          setState(() {
+            _currentDetectedLabel = null;
+            _currentConfidence = 0.0;
+          });
+        }
+      }
+    });
   }
 
   void _startScan() async {
@@ -87,30 +112,29 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
   Future<void> _captureAndAnalyze() async {
     if (_cameraController == null || !_cameraController!.value.isInitialized) return;
 
-    setState(() => _detectedMood = null); // Reset
+    // Strict validation: Check if a face is actually detected with decent confidence
+    if (_currentDetectedLabel == null || _currentConfidence < 0.45) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No face visible. Please position your face clearly in the frame.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _detectedMood = null); 
 
     try {
-      // For real-time analysis, we could take a picture, but to match the previous logic
-      // and keep it fast, we'll use the last available frame or a quick picture.
-      // Here we take a picture to ensure we have a good frame for the "Capture" experience.
-      final XFile photo = await _cameraController!.takePicture();
-      
-      // In a real TFLite implementation, one would process the image file here.
-      // For this implementation, we'll simulate the inference result based on the model controller's mapping.
-      // Since TFLite runModelOnFrame is usually for streams, we'll simulate a 1s processing delay
-      // and return a result.
-      
-      await Future.delayed(const Duration(milliseconds: 800));
-      
-      // Simulate detection (in a real app, you'd convert XFile to bytes and run inference)
-      final results = ["Happy", "Neutral", "Sad", "Anxious", "Irritated"];
-      final mappedMood = results[DateTime.now().second % results.length];
+      // Small delay to simulate "processing" but use the real detected label
+      await Future.delayed(const Duration(milliseconds: 600));
       
       if (mounted) {
         setState(() {
-          _detectedMood = _aiController.mapDetectedMood(mappedMood);
+          _detectedMood = _aiController.mapDetectedMood(_currentDetectedLabel!);
           _currentState = MoodScanState.result;
         });
+        _cameraController?.stopImageStream();
         _cameraController?.dispose();
         _cameraController = null;
         _isCameraInitialized = false;
