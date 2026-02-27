@@ -237,7 +237,7 @@ class _LlmScreenState extends State<LlmScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0F1A),
+      backgroundColor: Colors.white,
 
       appBar: AppBar(
         backgroundColor: const Color(0xFFF48FB1), // Pink Theme
@@ -309,11 +309,11 @@ class _LlmScreenState extends State<LlmScreen> {
                           children: [
                             if (!isUser)
                               Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: Image.asset(
-                                  "assets/images/bot.png",
-                                  height: 32,
-                                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.smart_toy, color: Colors.white30, size: 32),
+                                padding: const EdgeInsets.only(right: 8, top: 4),
+                                child: CircleAvatar(
+                                  radius: 16,
+                                  backgroundColor: const Color(0xFFFCE4EC),
+                                  child: Icon(Icons.smart_toy, color: const Color(0xFFF48FB1), size: 20),
                                 ),
                               ),
                             Column(
@@ -330,14 +330,14 @@ class _LlmScreenState extends State<LlmScreen> {
                                     decoration: BoxDecoration(
                                       color: isUser
                                           ? const Color(0xFFF48FB1)
-                                          : const Color(0xFF1C2433),
+                                          : const Color(0xFFFCE4EC), // Soft Pink for Bot
                                       borderRadius:
                                           BorderRadius.circular(16),
                                     ),
                                     child: SelectableText(
                                       msg["text"],
-                                      style: const TextStyle(
-                                          color: Colors.white,
+                                      style: TextStyle(
+                                          color: isUser ? Colors.white : Colors.black87,
                                           fontSize: 15),
                                     ),
                                   ),
@@ -380,7 +380,7 @@ class _LlmScreenState extends State<LlmScreen> {
                   child: Text(
                     "Assistant is typing...",
                     style:
-                        TextStyle(color: Colors.grey, fontSize: 12),
+                        TextStyle(color: Color(0xFFF48FB1), fontSize: 12),
                   ),
                 ),
 
@@ -393,7 +393,7 @@ class _LlmScreenState extends State<LlmScreen> {
                       child: TextField(
                         controller: _controller,
                         style:
-                            const TextStyle(color: Colors.white),
+                            const TextStyle(color: Colors.black87),
                         decoration: InputDecoration(
                           hintText: "Type a message...",
                           hintStyle:
@@ -405,11 +405,21 @@ class _LlmScreenState extends State<LlmScreen> {
                           ),
                           filled: true,
                           fillColor:
-                              const Color(0xFF1C2433),
+                              const Color(0xFFF5F5F5), // Light Grey Fill
                           border: OutlineInputBorder(
                             borderRadius:
                                 BorderRadius.circular(24),
-                            borderSide: BorderSide.none,
+                            borderSide: BorderSide(color: Colors.grey.withOpacity(0.1)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.circular(24),
+                            borderSide: BorderSide(color: Colors.grey.withOpacity(0.1)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.circular(24),
+                            borderSide: const BorderSide(color: Color(0xFFF48FB1)),
                           ),
                         ),
                       ),
@@ -445,9 +455,9 @@ class _LlmScreenState extends State<LlmScreen> {
               bottom: 90,
               child: FloatingActionButton(
                 mini: true,
-                backgroundColor: Colors.blueAccent,
+                backgroundColor: const Color(0xFFF48FB1),
                 onPressed: () => _scrollToBottom(force: true),
-                child: const Icon(Icons.arrow_downward),
+                child: const Icon(Icons.arrow_downward, color: Colors.white),
               ),
             ),
         ],
