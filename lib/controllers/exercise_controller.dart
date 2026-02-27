@@ -33,7 +33,7 @@ class ExerciseController {
           'Ensure the water temperature is comfortable.',
           'Watch out for slippery pool decks.'
         ],
-        imagePath: 'https://images.unsplash.com/photo-1519315901367-f34ff9154487?w=800'
+        imagePath: 'https://images.unsplash.com/photo-1620352080112-984422e11e55?w=800'
       ),
       ExerciseModel(
         name: 'Prenatal Yoga',
@@ -65,7 +65,7 @@ class ExerciseController {
           'Keep your back straight.',
           'Stop if you feel pressure in your pelvis.'
         ],
-        imagePath: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=800'
+        imagePath: 'https://images.unsplash.com/photo-1510616022830-2972986f3769?w=800'
       ),
       ExerciseModel(
         name: 'Kegels',
@@ -80,7 +80,7 @@ class ExerciseController {
           'Don\'t do them while urinating (can cause UTIs).',
           'Ensure you breathe normally while squeezing.'
         ],
-        imagePath: 'https://images.unsplash.com/photo-1599058917232-d750c1822009?w=800'
+        imagePath: 'https://images.unsplash.com/photo-1571731956622-39fe583942af?w=800'
       ),
       ExerciseModel(
         name: 'Cat-Cow Stretch',
@@ -95,7 +95,7 @@ class ExerciseController {
           'Avoid excessive arching of the back.',
           'Keep your movements fluid and gentle.'
         ],
-        imagePath: 'https://images.unsplash.com/photo-1599058917232-a7d50c1822009?w=800'
+        imagePath: 'https://images.unsplash.com/photo-1582213706480-1a646c827376?w=800'
       ),
       ExerciseModel(
         name: 'Modified Push-ups',

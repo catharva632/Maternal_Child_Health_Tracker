@@ -139,7 +139,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> with SingleTickerProvid
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFF48FB1), Color(0xFFFCE4EC)],
+          colors: [Color(0xFFAD1457), Color(0xFFD81B60)], // Professional Deep Pink to Crimson
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

@@ -71,12 +71,12 @@ class SOSController {
 
     // Step 2: Alert Doctor, Hospital, and Family Contacts
     // Alert Doctor
-    if (patient.doctorPhone != null) {
+    if (patient.doctorPhone != null && patient.doctorPhone!.isNotEmpty) {
       await _sendSMS(recipient: patient.doctorPhone!, message: sosMessage);
     }
     
     // Alert Patient's Hospital
-    if (patient.hospitalPhone != null) {
+    if (patient.hospitalPhone != null && patient.hospitalPhone!.isNotEmpty) {
       await _sendSMS(recipient: patient.hospitalPhone!, message: sosMessage);
     }
 
