@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:camera/camera.dart';
 import '../../controllers/gamification_controller.dart';
+import '../../controllers/mood_tracker_controller.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class MoodTrackerScreen extends StatefulWidget {
   const MoodTrackerScreen({super.key});
@@ -10,6 +13,12 @@ class MoodTrackerScreen extends StatefulWidget {
 
 class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
   String? _selectedMood;
+  CameraController? _cameraController;
+  bool _isCameraInitialized = false;
+  bool _isScanning = false;
+  String _scanStatus = "Scan your face for AI mood detection";
+  final _aiController = MoodTrackerController();
+
   final List<Map<String, dynamic>> _moods = [
     {'emoji': '😊', 'label': 'Happy'},
     {'emoji': '😔', 'label': 'Sad'},
@@ -20,9 +29,111 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _aiController.loadModel();
+  }
+
+  @override
+  void dispose() {
+    _cameraController?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _initializeCamera() async {
+    final status = await Permission.camera.request();
+    if (!status.isGranted) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Camera permission denied')),
+        );
+      }
+      return;
+    }
+
+    final cameras = await availableCameras();
+    if (cameras.isEmpty) return;
+
+    // Use front camera if available
+    final frontCamera = cameras.firstWhere(
+      (camera) => camera.lensDirection == CameraLensDirection.front,
+      orElse: () => cameras.first,
+    );
+
+    _cameraController = CameraController(
+      frontCamera,
+      ResolutionPreset.medium,
+      enableAudio: false,
+    );
+
+    try {
+      await _cameraController!.initialize();
+      if (mounted) {
+        setState(() => _isCameraInitialized = true);
+      }
+    } catch (e) {
+      debugPrint("Camera init error: $e");
+    }
+  }
+
+  Future<void> _startScanning() async {
+    if (!_isCameraInitialized) {
+      await _initializeCamera();
+    }
+    
+    if (!_isCameraInitialized) return;
+
+    setState(() {
+      _isScanning = true;
+      _scanStatus = "Analyzing facial expressions...";
+    });
+
+    int frameCount = 0;
+    _cameraController!.startImageStream((image) async {
+      frameCount++;
+      // Only run inference every 15 frames to save resources
+      if (frameCount % 15 == 0) {
+        final results = await _aiController.runInferenceOnFrame(image);
+        if (results != null && results.isNotEmpty) {
+          final topResult = results[0];
+          final detectedMoodLabel = topResult['label'];
+          final confidence = topResult['confidence'];
+
+          if (confidence > 0.5 && mounted) {
+            final mappedMood = _aiController.mapDetectedMood(detectedMoodLabel);
+            _cameraController!.stopImageStream();
+            setState(() {
+              _selectedMood = mappedMood;
+              _isScanning = false;
+              _isCameraInitialized = false;
+              _scanStatus = "Detected: $mappedMood (${(confidence * 100).toStringAsFixed(0)}%)";
+            });
+            _cameraController?.dispose();
+            _cameraController = null;
+          }
+        }
+      }
+    });
+
+    // Timeout after 10 seconds if nothing detected
+    Future.delayed(const Duration(seconds: 10), () {
+      if (_isScanning && mounted) {
+        _cameraController?.stopImageStream();
+        setState(() {
+          _isScanning = false;
+          _isCameraInitialized = false;
+          _scanStatus = "Scan timed out. Try again or select manually.";
+        });
+        _cameraController?.dispose();
+        _cameraController = null;
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Mood Tracker')),
+      appBar: AppBar(title: const Text('AI Mood Tracker')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -32,7 +143,36 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
               "How are you feeling today?",
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
+            const SizedBox(height: 8),
+            Text(
+              _scanStatus,
+              style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w500),
+            ),
             const SizedBox(height: 20),
+            
+            // Camera / AI Section
+            if (_isScanning && _isCameraInitialized)
+              Container(
+                height: 200,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(18),
+                  child: AspectRatio(
+                    aspectRatio: _cameraController!.value.aspectRatio,
+                    child: CameraPreview(_cameraController!),
+                  ),
+                ),
+              )
+            else
+              _buildScanButton(),
+              
+            const SizedBox(height: 32),
+            const Text("Manual Selection", style: TextStyle(color: Colors.grey, fontSize: 14)),
+            const SizedBox(height: 12),
             _buildMoodGrid(),
             if (_selectedMood != null) ...[
               const SizedBox(height: 32),
@@ -40,6 +180,32 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
             ],
             const SizedBox(height: 40),
             _buildSaveButton(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildScanButton() {
+    return InkWell(
+      onTap: _startScanning,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.primary.withOpacity(0.7)],
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(color: Theme.of(context).colorScheme.primary.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5)),
+          ],
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.face_retouching_natural, color: Colors.white, size: 28),
+            SizedBox(width: 12),
+            Text("AI Scan Face", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
