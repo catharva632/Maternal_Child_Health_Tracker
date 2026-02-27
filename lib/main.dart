@@ -70,8 +70,42 @@ void main() async {
   runApp(const MaternalHealthTrackerApp());
 }
 
-class MaternalHealthTrackerApp extends StatelessWidget {
+class MaternalHealthTrackerApp extends StatefulWidget {
   const MaternalHealthTrackerApp({super.key});
+
+  @override
+  State<MaternalHealthTrackerApp> createState() => _MaternalHealthTrackerAppState();
+}
+
+class _MaternalHealthTrackerAppState extends State<MaternalHealthTrackerApp> {
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _handleInitialLaunch();
+    _setupHomeWidgetListener();
+  }
+
+  void _handleInitialLaunch() async {
+    final uri = await HomeWidget.initiallyLaunchedFromHomeWidget();
+    if (uri != null) {
+      _handleWidgetAction(uri);
+    }
+  }
+
+  void _setupHomeWidgetListener() {
+    HomeWidget.widgetClicked.listen(_handleWidgetAction);
+  }
+
+  void _handleWidgetAction(Uri uri) {
+    if (uri.host == 'sos_action') {
+      // Small delay to ensure navigator is ready
+      Future.delayed(const Duration(milliseconds: 500), () {
+        _navigatorKey.currentState?.pushNamed('/emergencyMap');
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,6 +117,7 @@ class MaternalHealthTrackerApp extends StatelessWidget {
           builder: (context, lang, child) {
             return MaterialApp(
               key: ValueKey(lang), // Force rebuild of the entire app on language change
+              navigatorKey: _navigatorKey,
               title: 'Maternal Child Health Tracker',
               themeMode: themeMode,
               theme: _buildLightTheme(),
