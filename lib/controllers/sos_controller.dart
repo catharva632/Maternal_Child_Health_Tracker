@@ -164,7 +164,7 @@ class SOSController {
     if (_currentPosition == null) return localHospitals;
 
     for (var hospital in localHospitals) {
-      hospital['distance'] = _calculateDistance(
+      hospital['distance'] = calculateDistance(
         _currentPosition!.latitude,
         _currentPosition!.longitude,
         hospital['lat'],
@@ -177,7 +177,7 @@ class SOSController {
     return sorted;
   }
 
-  double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+  double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
     const r = 6371; // Radius of earth in km
     double dLat = _toRadians(lat2 - lat1);
     double dLon = _toRadians(lon2 - lon1);

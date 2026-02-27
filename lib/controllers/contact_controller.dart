@@ -13,25 +13,25 @@ class ContactController {
   final List<ContactModel> _contacts = [];
 
   Future<void> addContact(String name, String phone) async {
-    final user = _auth.currentUser;
-    if (user == null) return;
-
     final contact = ContactModel(name: name, phone: phone);
     
-    // Save locally
+    // Always save locally
     _contacts.add(contact);
 
-    // Save to Firestore subcollection
-    await _db
-        .collection('users')
-        .doc(user.uid)
-        .collection('contacts')
-        .add(contact.toMap());
+    final user = _auth.currentUser;
+    if (user != null) {
+      // Save to Firestore subcollection only if logged in
+      await _db
+          .collection('users')
+          .doc(user.uid)
+          .collection('contacts')
+          .add(contact.toMap());
+    }
   }
 
   Future<void> fetchContacts() async {
     final user = _auth.currentUser;
-    if (user == null) return;
+    if (user == null) return; // Keep existing local contacts for bypass mode
 
     final snapshot = await _db
         .collection('users')

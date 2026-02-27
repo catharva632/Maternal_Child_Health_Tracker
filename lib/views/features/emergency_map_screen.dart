@@ -32,10 +32,15 @@ class _EmergencyMapScreenState extends State<EmergencyMapScreen> {
       setState(() {});
       if (_mapController != null && _currentPosition != null) {
         _mapController!.animateCamera(
-          CameraUpdate.newLatLng(
-            LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+              zoom: 15, // Closer zoom to see local area
+            ),
           ),
         );
+        // Reload markers to filter by current position
+        _loadHospitalMarkers();
       }
     } catch (e) {
       debugPrint("Location error: $e");
@@ -44,21 +49,37 @@ class _EmergencyMapScreenState extends State<EmergencyMapScreen> {
   }
 
   void _loadHospitalMarkers() {
+    _markers.clear();
     final hospitals = SOSController().localHospitals;
+    final sos = SOSController();
+    
     for (var hospital in hospitals) {
-      _markers.add(
-        Marker(
-          markerId: MarkerId(hospital['name']),
-          position: LatLng(hospital['lat'], hospital['lng']),
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-          onTap: () => _showHospitalPopup(hospital),
-        ),
-      );
+      double distance = 0;
+      if (_currentPosition != null) {
+        distance = sos.calculateDistance(
+          _currentPosition!.latitude,
+          _currentPosition!.longitude,
+          hospital['lat'],
+          hospital['lng'],
+        );
+      }
+
+      // Only show if no position yet (initial load) or within 2km
+      if (_currentPosition == null || distance <= 2.0) {
+        _markers.add(
+          Marker(
+            markerId: MarkerId(hospital['name']),
+            position: LatLng(hospital['lat'], hospital['lng']),
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+            onTap: () => _showHospitalPopup(hospital, distance),
+          ),
+        );
+      }
     }
     setState(() {});
   }
 
-  void _showHospitalPopup(Map<String, dynamic> hospital) {
+  void _showHospitalPopup(Map<String, dynamic> hospital, double distance) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -87,7 +108,7 @@ class _EmergencyMapScreenState extends State<EmergencyMapScreen> {
                 ),
                 const SizedBox(width: 12),
                 const Icon(Icons.location_on, size: 16, color: Colors.grey),
-                const Text(' 1.2 km away', style: TextStyle(color: Colors.grey)),
+                Text(' ${distance.toStringAsFixed(1)} km away', style: const TextStyle(color: Colors.grey)),
               ],
             ),
             const SizedBox(height: 20),
