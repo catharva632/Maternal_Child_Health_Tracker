@@ -83,23 +83,47 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
 
   void _startImageStream() {
     int frameCount = 0;
+    int detections = 0;
+    
     _cameraController!.startImageStream((image) async {
       frameCount++;
-      if (frameCount % 10 == 0) { // Run inference every 10 frames
+      if (frameCount % 10 == 0 && _currentState == MoodScanState.scanning) { 
         final results = await _aiController.runInferenceOnFrame(image);
         if (results != null && results.isNotEmpty && mounted) {
+          final label = results[0]['label'];
+          final confidence = results[0]['confidence'];
+
           setState(() {
-            _currentDetectedLabel = results[0]['label'];
-            _currentConfidence = results[0]['confidence'];
+            _currentDetectedLabel = label;
+            _currentConfidence = confidence;
           });
-        } else if (mounted) {
-          setState(() {
-            _currentDetectedLabel = null;
-            _currentConfidence = 0.0;
-          });
+
+          // Auto-trigger if confidence is high enough for a steady detection
+          if (confidence > 0.45) {
+            detections++;
+            if (detections >= 2) { // Need 2 steady frames to confirm
+              _processAutoDetection(label);
+            }
+          } else {
+            detections = 0;
+          }
         }
       }
     });
+  }
+
+  void _processAutoDetection(String label) async {
+    if (!mounted || _currentState != MoodScanState.scanning) return;
+
+    setState(() {
+      _detectedMood = _aiController.mapDetectedMood(label);
+      _currentState = MoodScanState.result;
+    });
+
+    _cameraController?.stopImageStream();
+    _cameraController?.dispose();
+    _cameraController = null;
+    _isCameraInitialized = false;
   }
 
   void _startScan() async {
@@ -109,45 +133,12 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
     }
   }
 
-  Future<void> _captureAndAnalyze() async {
-    if (_cameraController == null || !_cameraController!.value.isInitialized) return;
-
-    // Strict validation: Check if a face is actually detected with decent confidence
-    if (_currentDetectedLabel == null || _currentConfidence < 0.45) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No face visible. Please position your face clearly in the frame.'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-      return;
-    }
-
-    setState(() => _detectedMood = null); 
-
-    try {
-      // Small delay to simulate "processing" but use the real detected label
-      await Future.delayed(const Duration(milliseconds: 600));
-      
-      if (mounted) {
-        setState(() {
-          _detectedMood = _aiController.mapDetectedMood(_currentDetectedLabel!);
-          _currentState = MoodScanState.result;
-        });
-        _cameraController?.stopImageStream();
-        _cameraController?.dispose();
-        _cameraController = null;
-        _isCameraInitialized = false;
-      }
-    } catch (e) {
-      debugPrint("Capture error: $e");
-    }
-  }
-
   void _resetScan() {
     setState(() {
       _currentState = MoodScanState.initial;
       _detectedMood = null;
+      _currentConfidence = 0.0;
+      _currentDetectedLabel = null;
     });
   }
 
@@ -244,36 +235,19 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
 
         // Bottom Controls
         Positioned(
-          bottom: 50,
+          bottom: 100,
           left: 0,
           right: 0,
           child: Column(
             children: [
-              const Text(
-                "Center your face in the frame",
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500, shadows: [Shadow(blurRadius: 10)]),
+              Text(
+                _currentConfidence > 0.3 ? "Face Detected! Analyzing..." : "Center your face in the frame",
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18, shadows: [Shadow(blurRadius: 10)]),
               ),
-              const SizedBox(height: 30),
-              GestureDetector(
-                onTap: _captureAndAnalyze,
-                child: Container(
-                  height: 80,
-                  width: 80,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFFF48FB1), width: 4),
-                    boxShadow: [
-                      BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 15),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Text(
-                      "Capture",
-                      style: TextStyle(color: Color(0xFFF48FB1), fontWeight: FontWeight.bold, fontSize: 13),
-                    ),
-                  ),
-                ),
+              const SizedBox(height: 10),
+              const Text(
+                "Keep still for a moment",
+                style: TextStyle(color: Colors.white70, fontSize: 14),
               ),
             ],
           ),
