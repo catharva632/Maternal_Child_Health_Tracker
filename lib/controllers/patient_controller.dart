@@ -92,7 +92,25 @@ class PatientController {
 
   Stream<PatientModel?> getPatientStream() {
     final user = _auth.currentUser;
-    if (user == null) return Stream.value(null);
+    
+    // For Development/Login Bypass: return a mock patient if not logged in
+    if (user == null) {
+      return Stream.value(PatientModel(
+        name: "Test Patient",
+        email: "test@example.com",
+        phone: "9876543210",
+        address: "Sample Address, Pune",
+        city: "Pune",
+        pincode: "411001",
+        state: "Maharashtra",
+        pregnancyWeek: 12,
+        doctorName: "Dr. Anjali Patil",
+        doctorPhone: "9823456789",
+        hospitalName: "Life Care Hospital",
+        hospitalPhone: "020-24451234",
+        hospitalAddress: "Sadashiv Peth, Pune",
+      ));
+    }
 
     return _db.collection('users').doc(user.uid).snapshots().map((snapshot) {
       if (!snapshot.exists || snapshot.data() == null) return null;

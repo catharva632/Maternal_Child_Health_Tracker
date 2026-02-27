@@ -27,9 +27,10 @@ class _EmergencyMapScreenState extends State<EmergencyMapScreen> {
 
   Future<void> _loadInitialLocation() async {
     try {
-      _currentPosition = await Geolocator.getCurrentPosition();
+      // Use the robust permission handler from SOSController
+      _currentPosition = await SOSController().determinePosition();
       setState(() {});
-      if (_mapController != null) {
+      if (_mapController != null && _currentPosition != null) {
         _mapController!.animateCamera(
           CameraUpdate.newLatLng(
             LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
@@ -38,6 +39,7 @@ class _EmergencyMapScreenState extends State<EmergencyMapScreen> {
       }
     } catch (e) {
       debugPrint("Location error: $e");
+      // Fallback to default viewport if permissions denied
     }
   }
 

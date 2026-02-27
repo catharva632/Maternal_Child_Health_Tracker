@@ -58,7 +58,7 @@ class SOSController {
 
     // Step 1: Get GPS location
     try {
-      _currentPosition = await _determinePosition();
+      _currentPosition = await determinePosition();
       print("Step 1: GPS Fixed: ${_currentPosition!.latitude}, ${_currentPosition!.longitude}");
     } catch (e) {
       print("GPS Error: $e");
@@ -191,7 +191,7 @@ class SOSController {
     return degree * pi / 180;
   }
 
-  Future<Position> _determinePosition() async {
+  Future<Position> determinePosition() async {
     bool serviceEnabled;
     LocationPermission permission;
 
