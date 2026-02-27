@@ -20,8 +20,13 @@ class ProfileController {
 
       if (image == null) return;
 
-      final User? user = _auth.currentUser;
-      if (user == null) return;
+       final User? user = _auth.currentUser;
+       if (user == null) {
+         ScaffoldMessenger.of(context).showSnackBar(
+           const SnackBar(content: Text('Firebase User is null. Please login normally once to initialize session.')),
+         );
+         return;
+       }
 
       // Show loading indicator
       ScaffoldMessenger.of(context).showSnackBar(
