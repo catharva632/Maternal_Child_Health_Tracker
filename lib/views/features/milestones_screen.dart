@@ -41,13 +41,11 @@ class MilestonesScreen extends StatelessWidget {
                     children: [
                       _buildTopCard(context, week, trimester, progress),
                       const SizedBox(height: 20),
-                      _buildFeatureList(context, [
-                        {'title': 'DNA: Personalized Path', 'subtitle': 'Tailor your pregnancy journey', 'route': '/dnaMode', 'icon': Icons.fingerprint},
+                        _buildFeatureList(context, [
                         {'title': 'My Achievements', 'subtitle': 'View your badges & progress', 'route': '/badges', 'icon': Icons.emoji_events},
                         {'title': 'Weekly Development', 'subtitle': 'Week $week details', 'route': '/weeklyDevelopment', 'arguments': {'week': week}, 'icon': Icons.child_care},
                         {'title': 'Mood Tracker', 'subtitle': 'Emotional well-being', 'route': '/moodTracker', 'icon': Icons.mood},
                         {'title': 'Cultural Wisdom', 'subtitle': 'Traditional tips & facts', 'route': '/culturalWisdom', 'icon': Icons.brightness_high},
-                        {'title': 'Milestone Timeline', 'subtitle': 'View your progress', 'route': null, 'icon': Icons.timeline},
                       ]),
                     ],
                   ),

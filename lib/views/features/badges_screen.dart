@@ -9,7 +9,6 @@ class BadgesScreen extends StatelessWidget {
     {'id': 'healthy_diet', 'title': 'Healthy Diet Week', 'icon': Icons.restaurant, 'color': Colors.green},
     {'id': 'kick_tracker', 'title': 'Kick Tracker Champion', 'icon': Icons.sports_score, 'color': Colors.orange},
     {'id': 'calm_mind', 'title': 'Calm Mind Star', 'icon': Icons.auto_awesome, 'color': Colors.blue},
-    {'id': 'dna_dna', 'title': 'DNA Path Pioneer', 'icon': Icons.fingerprint, 'color': Colors.purple},
     {'id': 'mood_logger', 'title': 'Mindful Mother', 'icon': Icons.favorite, 'color': Colors.pink},
   ];
 
