@@ -67,10 +67,10 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
                 _buildTabBar(),
                 Expanded(
                   child: TabBarView(
-                    controller: _tabController,
+                        controller: _tabController,
                     children: [
-                       _buildVisitsTab(),
-                       _buildVaccinationTab(),
+                       _buildVisitsTab(week),
+                       _buildVaccinationTab(week),
                        _buildHospitalInfoTab(doctorName, hospitalName, hospitalPhone, hospitalAddress, hospitalLocation),
                     ],
                   ),
@@ -90,13 +90,13 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(30),
         gradient: const LinearGradient(
-          colors: [Color(0xFFF48FB1), Color(0xFFFCE4EC)],
+          colors: [Color(0xFFE91E63), Color(0xFFC2185B)], // Professional Deep Pink to Crimson
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFF48FB1).withOpacity(0.3),
+            color: const Color(0xFFE91E63).withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -154,7 +154,7 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
                   label: const Text('Call Doctor'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    foregroundColor: const Color(0xFFF48FB1),
+                    foregroundColor: const Color(0xFFE91E63),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                     elevation: 0,
                   ),
@@ -193,7 +193,7 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
         child: TabBar(
           controller: _tabController,
           indicator: BoxDecoration(
-            color: const Color(0xFFF48FB1),
+            color: const Color(0xFFE91E63),
             borderRadius: BorderRadius.circular(25),
           ),
           labelColor: Colors.white,
@@ -210,34 +210,38 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
     );
   }
 
-  Widget _buildVisitsTab() {
-    final visits = [
-      {'name': 'Week 8 Visit', 'week': 'Week 8', 'status': 'Completed'},
-      {'name': 'Week 12 Visit', 'week': 'Week 12', 'status': 'Completed'},
-      {'name': 'Week 20 Anatomy Scan', 'week': 'Week 20', 'status': 'Upcoming'},
-      {'name': 'Week 28 Visit', 'week': 'Week 28', 'status': 'Pending'},
-      {'name': 'Week 36 Visit', 'week': 'Week 36', 'status': 'Pending'},
+  Widget _buildVisitsTab(int currentWeek) {
+    final visitData = [
+      {'name': 'Week 8 Visit', 'week': 8},
+      {'name': 'Week 12 Visit', 'week': 12},
+      {'name': 'Week 20 Anatomy Scan', 'week': 20},
+      {'name': 'Week 28 Visit', 'week': 28},
+      {'name': 'Week 36 Visit', 'week': 36},
     ];
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: visits.length,
+      itemCount: visitData.length,
       itemBuilder: (context, index) {
-        final visit = visits[index];
+        final visit = visitData[index];
+        final int targetWeek = visit['week'] as int;
+        
+        String status;
         IconData icon;
         Color iconColor;
-        switch (visit['status']) {
-          case 'Completed':
-            icon = Icons.check_circle;
-            iconColor = Colors.green;
-            break;
-          case 'Upcoming':
-            icon = Icons.access_time_filled;
-            iconColor = Colors.orange;
-            break;
-          default:
-            icon = Icons.radio_button_unchecked;
-            iconColor = Colors.grey;
+
+        if (currentWeek >= targetWeek) {
+          status = 'Completed';
+          icon = Icons.check_circle;
+          iconColor = Colors.green;
+        } else if (targetWeek - currentWeek <= 2) {
+          status = 'Upcoming';
+          icon = Icons.access_time_filled;
+          iconColor = Colors.orange;
+        } else {
+          status = 'Pending';
+          icon = Icons.radio_button_unchecked;
+          iconColor = Colors.grey;
         }
 
         return Card(
@@ -258,8 +262,8 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
               ),
               child: Icon(icon, color: iconColor),
             ),
-            title: Text(visit['name']!, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(visit['status']!, style: TextStyle(color: iconColor)),
+            title: Text(visit['name'] as String, style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text(status, style: TextStyle(color: iconColor)),
             trailing: const Icon(Icons.chevron_right, color: Colors.grey),
           ),
         );
@@ -267,7 +271,14 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
     );
   }
 
-  Widget _buildVaccinationTab() {
+  Widget _buildVaccinationTab(int currentWeek) {
+    bool isCompleted(String time) {
+      if (time == '1st Trimester') return currentWeek >= 1;
+      if (time == '2nd Trimester') return currentWeek >= 14;
+      if (time == '3rd Trimester') return currentWeek >= 27;
+      return false;
+    }
+
     final motherVaccines = [
       {'name': 'COVID-19 Vaccine', 'time': '1st Trimester', 'desc': 'Safe at any time'},
       {'name': 'Tetanus Toxoid (TT) 1', 'time': '1st Trimester', 'desc': 'On confirmation'},
@@ -295,10 +306,10 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
       padding: const EdgeInsets.all(16),
       children: [
         _buildSectionTitle("Mother's Vaccination Schedule"),
-        ...motherVaccines.map((v) => _buildVaccineCard(v)),
+        ...motherVaccines.map((v) => _buildVaccineCard(v, checked: isCompleted(v['time']!))),
         const SizedBox(height: 24),
         _buildSectionTitle("Child's Vaccination Schedule (Birth - 3 Months)"),
-        ...childVaccines.map((v) => _buildVaccineCard(v, isChild: true)),
+        ...childVaccines.map((v) => _buildVaccineCard(v, isChild: true, checked: false)),
       ],
     );
   }
@@ -311,13 +322,13 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
         style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: const Color(0xFFF48FB1).withOpacity(0.8),
+          color: const Color(0xFFE91E63).withOpacity(0.8),
         ),
       ),
     );
   }
 
-  Widget _buildVaccineCard(Map<String, String> v, {bool isChild = false}) {
+  Widget _buildVaccineCard(Map<String, String> v, {bool isChild = false, bool checked = false}) {
     return Card(
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 12),
@@ -331,20 +342,20 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
         leading: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: (isChild ? Colors.blue : const Color(0xFFF48FB1)).withOpacity(0.1),
+            color: (isChild ? Colors.blue : const Color(0xFFE91E63)).withOpacity(0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
             isChild ? Icons.child_care : Icons.vaccines,
-            color: isChild ? Colors.blue : const Color(0xFFF48FB1),
+            color: isChild ? Colors.blue : const Color(0xFFE91E63),
           ),
         ),
         title: Text(v['name']!, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text('${v['time']} • ${v['desc']}'),
         trailing: Checkbox(
-          value: false,
+          value: checked,
           onChanged: (val) {},
-          activeColor: const Color(0xFFF48FB1),
+          activeColor: const Color(0xFFE91E63),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
       ),
