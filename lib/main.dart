@@ -98,8 +98,8 @@ class _MaternalHealthTrackerAppState extends State<MaternalHealthTrackerApp> {
     HomeWidget.widgetClicked.listen(_handleWidgetAction);
   }
 
-  void _handleWidgetAction(Uri uri) {
-    if (uri.host == 'sos_action') {
+  void _handleWidgetAction(Uri? uri) {
+    if (uri?.host == 'sos_action') {
       // Small delay to ensure navigator is ready
       Future.delayed(const Duration(milliseconds: 500), () {
         _navigatorKey.currentState?.pushNamed('/emergencyMap');
