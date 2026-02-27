@@ -53,7 +53,7 @@ class MaternalHealthTrackerApp extends StatelessWidget {
           themeMode: mode,
           theme: _buildLightTheme(),
           darkTheme: _buildDarkTheme(),
-          home: const AuthWrapper(),
+          home: const PatientDashboard(),
           routes: _getRoutes(),
         );
       },

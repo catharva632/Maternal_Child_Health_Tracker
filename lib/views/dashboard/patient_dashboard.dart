@@ -32,6 +32,7 @@ class PatientDashboard extends StatelessWidget {
                 ],
               ),
               endDrawer: _buildDrawer(context, patient, mode == ThemeMode.dark),
+              endDrawerEnableOpenDragGesture: true,
               body: snapshot.connectionState == ConnectionState.waiting
                   ? const Center(child: CircularProgressIndicator())
                   : SingleChildScrollView(
