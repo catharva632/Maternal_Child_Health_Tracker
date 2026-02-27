@@ -1,5 +1,8 @@
 import 'package:tflite_v2/tflite_v2.dart';
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class MoodTrackerController {
   static final MoodTrackerController _instance = MoodTrackerController._internal();
@@ -25,23 +28,33 @@ class MoodTrackerController {
     }
   }
 
-  Future<List<dynamic>?> runInferenceOnFrame(CameraImage image) async {
+  Future<List<dynamic>?> runInferenceOnFrame(CameraImage image, {int rotation = 90}) async {
     if (!_isModelLoaded) await loadModel();
     
     try {
-      return await Tflite.runModelOnFrame(
+      final results = await Tflite.runModelOnFrame(
         bytesList: image.planes.map((plane) => plane.bytes).toList(),
         imageHeight: image.height,
         imageWidth: image.width,
         imageMean: 127.5,
         imageStd: 127.5,
-        rotation: 90,
+        rotation: rotation,
         numResults: 2,
         threshold: 0.1,
         asynch: true,
       );
+      
+      if (results == null) {
+        debugPrint("Inference returned NULL results for rotation $rotation");
+      } else if (results.isEmpty) {
+        debugPrint("Inference returned EMPTY results for rotation $rotation");
+      } else {
+        debugPrint("Inference results (rot $rotation): $results");
+      }
+      
+      return results;
     } catch (e) {
-      print("Inference error: $e");
+      debugPrint("Inference error at rotation $rotation: $e");
       return null;
     }
   }
@@ -49,6 +62,20 @@ class MoodTrackerController {
   void dispose() {
     Tflite.close();
     _isModelLoaded = false;
+  }
+
+  Future<void> saveMood(String mood) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('moods')
+        .add({
+      'mood': mood,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
   }
 
   /// Maps model labels to UI mood labels

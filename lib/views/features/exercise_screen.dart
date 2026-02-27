@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../controllers/exercise_controller.dart';
 import '../../controllers/patient_controller.dart';
+import '../../controllers/settings_controller.dart';
 import '../../models/patient_model.dart';
 import '../../models/diet_model.dart';
 import '../../widgets/exercise_card.dart';
+import '../../controllers/diet_log_controller.dart';
 
 class ExerciseScreen extends StatefulWidget {
   const ExerciseScreen({super.key});
@@ -76,15 +78,15 @@ class _ExerciseScreenState extends State<ExerciseScreen> with SingleTickerProvid
         return Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
-            title: const Text('Exercise & Diet Plan'),
+            title: Text(SettingsController().tr('Exercise & Diet Plan')),
             bottom: TabBar(
               controller: _tabController,
               labelColor: const Color(0xFFF48FB1),
               unselectedLabelColor: Colors.grey,
               indicatorColor: const Color(0xFFF48FB1),
-              tabs: const [
-                Tab(text: 'Exercises', icon: Icon(Icons.fitness_center)),
-                Tab(text: 'Diet Plan', icon: Icon(Icons.restaurant_menu)),
+              tabs: [
+                Tab(text: SettingsController().tr('Exercises'), icon: const Icon(Icons.fitness_center)),
+                Tab(text: SettingsController().tr('Diet Plan'), icon: const Icon(Icons.restaurant_menu)),
               ],
             ),
           ),
@@ -94,7 +96,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> with SingleTickerProvid
                   controller: _tabController,
                   children: [
                     _buildExercisesTab(exercises),
-                    _buildDietTab(),
+                    _buildDietTab(patient),
                   ],
                 ),
         );
@@ -115,7 +117,58 @@ class _ExerciseScreenState extends State<ExerciseScreen> with SingleTickerProvid
     );
   }
 
-  Widget _buildDietTab() {
+  void _showLogMealDialog() {
+    final mealController = TextEditingController();
+    String selectedMealType = 'Breakfast';
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(SettingsController().tr('Log Today\'s Meal')),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButton<String>(
+                value: selectedMealType,
+                isExpanded: true,
+                onChanged: (val) => setDialogState(() => selectedMealType = val!),
+                items: ['Breakfast', 'Lunch', 'Dinner', 'Snacks']
+                    .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+                    .toList(),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: mealController,
+                decoration: InputDecoration(
+                  hintText: SettingsController().tr('What did you eat?'),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                maxLines: 2,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: Text(SettingsController().tr('Cancel'))),
+            ElevatedButton(
+              onPressed: () async {
+                if (mealController.text.isNotEmpty) {
+                  await DietLogController().logMeal(selectedMealType, mealController.text);
+                  if (mounted) Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(SettingsController().tr('Meal logged successfully!'))),
+                  );
+                }
+              },
+              child: Text(SettingsController().tr('Log Meal')),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDietTab(PatientModel? patient) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -123,12 +176,27 @@ class _ExerciseScreenState extends State<ExerciseScreen> with SingleTickerProvid
         children: [
           _buildDietHeader(),
           const SizedBox(height: 24),
-          const Text(
-            'Weekly Nutrition Roadmap',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                SettingsController().tr('Weekly Nutrition Roadmap'),
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              ElevatedButton.icon(
+                onPressed: _showLogMealDialog,
+                icon: const Icon(Icons.add_circle_outline, size: 18),
+                label: Text(SettingsController().tr('Log Meal')),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFF48FB1),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
-          _buildDietTable(),
+          _buildDietTable(patient),
         ],
       ),
     );
@@ -159,15 +227,15 @@ class _ExerciseScreenState extends State<ExerciseScreen> with SingleTickerProvid
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
-                  'Healthy Eating Tip',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                  SettingsController().tr('Healthy Eating Tip'),
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
-                  'Drink at least 8-10 glasses of water daily to stay hydrated.',
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                  SettingsController().tr('Drink at least 8-10 glasses of water daily to stay hydrated.'),
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
                 ),
               ],
             ),
@@ -177,7 +245,13 @@ class _ExerciseScreenState extends State<ExerciseScreen> with SingleTickerProvid
     );
   }
 
-  Widget _buildDietTable() {
+  Widget _buildDietTable(PatientModel? patient) {
+    final Map<String, Map<String, String>> dietData = patient?.dietPlan ?? {};
+    final bool hasCustomDiet = dietData.isNotEmpty;
+
+    final List<String> days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    final List<String> shortDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -189,20 +263,35 @@ class _ExerciseScreenState extends State<ExerciseScreen> with SingleTickerProvid
         child: DataTable(
           columnSpacing: 20,
           headingRowColor: MaterialStateProperty.all(const Color(0xFFFCE4EC).withOpacity(0.3)),
-          columns: const [
-            DataColumn(label: Text('Day', style: TextStyle(fontWeight: FontWeight.bold))),
-            DataColumn(label: Text('Breakfast', style: TextStyle(fontWeight: FontWeight.bold))),
-            DataColumn(label: Text('Lunch', style: TextStyle(fontWeight: FontWeight.bold))),
-            DataColumn(label: Text('Dinner', style: TextStyle(fontWeight: FontWeight.bold))),
+          columns: [
+            DataColumn(label: Text(SettingsController().tr('Day'), style: const TextStyle(fontWeight: FontWeight.bold))),
+            DataColumn(label: Text(SettingsController().tr('Breakfast'), style: const TextStyle(fontWeight: FontWeight.bold))),
+            DataColumn(label: Text(SettingsController().tr('Lunch'), style: const TextStyle(fontWeight: FontWeight.bold))),
+            DataColumn(label: Text(SettingsController().tr('Dinner'), style: const TextStyle(fontWeight: FontWeight.bold))),
           ],
-          rows: weeklyDiet.map((dayDiet) {
-            return DataRow(cells: [
-              DataCell(Text(dayDiet.day, style: const TextStyle(fontWeight: FontWeight.bold))),
-              DataCell(_buildMealCell(dayDiet.meals[0])),
-              DataCell(_buildMealCell(dayDiet.meals[1])),
-              DataCell(_buildMealCell(dayDiet.meals[2])),
-            ]);
-          }).toList(),
+          rows: List.generate(7, (index) {
+            final day = days[index];
+            final shortDay = shortDays[index];
+            
+            if (hasCustomDiet && dietData.containsKey(day)) {
+              final meals = dietData[day]!;
+              return DataRow(cells: [
+                DataCell(Text(SettingsController().tr(shortDay), style: const TextStyle(fontWeight: FontWeight.bold))),
+                DataCell(Text(meals['Breakfast'] ?? '-', style: const TextStyle(fontSize: 13))),
+                DataCell(Text(meals['Lunch'] ?? '-', style: const TextStyle(fontSize: 13))),
+                DataCell(Text(meals['Dinner'] ?? '-', style: const TextStyle(fontSize: 13))),
+              ]);
+            } else {
+              // Fallback to default weeklyDiet
+              final dayDiet = weeklyDiet[index];
+              return DataRow(cells: [
+                DataCell(Text(dayDiet.day, style: const TextStyle(fontWeight: FontWeight.bold))),
+                DataCell(_buildMealCell(dayDiet.meals[0])),
+                DataCell(_buildMealCell(dayDiet.meals[1])),
+                DataCell(_buildMealCell(dayDiet.meals[2])),
+              ]);
+            }
+          }),
         ),
       ),
     );

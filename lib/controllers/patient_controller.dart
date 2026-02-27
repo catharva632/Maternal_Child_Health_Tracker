@@ -126,7 +126,7 @@ class PatientController {
         .snapshots()
         .map((snapshot) {
       return snapshot.docs
-          .map((doc) => PatientModel.fromMap(doc.data()))
+          .map((doc) => PatientModel.fromMap(doc.data())..uid = doc.id)
           .toList();
     });
   }
@@ -146,5 +146,9 @@ class PatientController {
       'isHighRisk': isHighRisk,
       'isFirstBaby': isFirstBaby,
     });
+  }
+
+  Future<void> updatePatientMetadata(String patientId, Map<String, dynamic> updates) async {
+    await _db.collection('users').doc(patientId).update(updates);
   }
 }

@@ -12,19 +12,42 @@ class ExerciseDetailScreen extends StatefulWidget {
 class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
   late YoutubePlayerController _controller;
   bool _isPlayerReady = false;
+  bool _isControllerInitialized = false;
 
   @override
-  void initState() {
-    super.initState();
-    // Default video ID for demo, in real app this would come from the model
-    _controller = YoutubePlayerController(
-      initialVideoId: 'h8k7c-6G_90', // Example prenatal exercise
-      flags: const YoutubePlayerFlags(
-        autoPlay: false,
-        mute: false,
-        isLive: false,
-      ),
-    )..addListener(_listener);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isControllerInitialized) {
+      final ExerciseModel exercise = ModalRoute.of(context)?.settings.arguments as ExerciseModel? ?? 
+        ExerciseModel(
+          name: 'Prenatal Walking', 
+          duration: '20 Minutes Daily', 
+          steps: [
+            'Start walking slowly and find a rhythmic pace.',
+            'Keep your back straight and maintain good posture.',
+            'Move your arms naturally by your sides.',
+            'Walk comfortably and stop if you feel tired.'
+          ], 
+          precautions: [
+            'Drink enough water before and after.',
+            'Avoid overexertion in hot weather.',
+            'Stop immediately if you feel dizzy.',
+            'Always wear comfortable, supportive shoes.'
+          ], 
+          imagePath: 'assets/images/walking.jpg',
+          videoId: 'Qd4QBIoKrJM',
+        );
+
+      _controller = YoutubePlayerController(
+        initialVideoId: exercise.videoId,
+        flags: const YoutubePlayerFlags(
+          autoPlay: false,
+          mute: false,
+          isLive: false,
+        ),
+      )..addListener(_listener);
+      _isControllerInitialized = true;
+    }
   }
 
   void _listener() {
@@ -37,13 +60,17 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
 
   @override
   void deactivate() {
-    _controller.pause();
+    if (_isControllerInitialized) {
+      _controller.pause();
+    }
     super.deactivate();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    if (_isControllerInitialized) {
+      _controller.dispose();
+    }
     super.dispose();
   }
 
@@ -65,7 +92,8 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
           'Stop immediately if you feel dizzy.',
           'Always wear comfortable, supportive shoes.'
         ], 
-        imagePath: 'https://images.unsplash.com/photo-1518310383802-640c2de311b2?q=80&w=2070&auto=format&fit=crop'
+        imagePath: 'assets/images/walking.jpg',
+        videoId: 'Qd4QBIoKrJM',
       );
 
     return Scaffold(
@@ -104,12 +132,21 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
             // Exercise Image
             Hero(
               tag: exercise.name,
-              child: Image.network(
-                exercise.imagePath.startsWith('http') 
-                  ? exercise.imagePath 
-                  : 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2020&auto=format&fit=crop',
-                fit: BoxFit.cover,
-              ),
+              child: exercise.imagePath.startsWith('http')
+                ? Image.network(
+                    exercise.imagePath,
+                    fit: BoxFit.cover,
+                  )
+                : Image.asset(
+                    exercise.imagePath,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.network(
+                        'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2020&auto=format&fit=crop',
+                        fit: BoxFit.cover,
+                      );
+                    },
+                  ),
             ),
             // Dark Gradient Overlay
             Container(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../controllers/settings_controller.dart';
 
 class WeeklyDevelopmentDetailScreen extends StatelessWidget {
   final int week;
@@ -11,21 +12,21 @@ class WeeklyDevelopmentDetailScreen extends StatelessWidget {
     final Map<String, dynamic> weekData = _getWeekData(week);
 
     return Scaffold(
-      appBar: AppBar(title: Text('Week $week Development')),
+      appBar: AppBar(title: Text('${SettingsController().tr('Week')} $week ${SettingsController().tr('Development')}')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionHeader(context, "Baby's Development", Icons.child_care),
+            _buildSectionHeader(context, SettingsController().tr("Baby's Development"), Icons.child_care),
             const SizedBox(height: 12),
             _buildInfoCard(context, weekData['babyDevelopments']),
             const SizedBox(height: 24),
-            _buildSectionHeader(context, "Mother's Body Changes", Icons.woman),
+            _buildSectionHeader(context, SettingsController().tr("Mother's Body Changes"), Icons.woman),
             const SizedBox(height: 12),
             _buildInfoCard(context, weekData['motherChanges']),
             const SizedBox(height: 24),
-            _buildSectionHeader(context, "Weekly Tips", Icons.tips_and_updates),
+            _buildSectionHeader(context, SettingsController().tr("Weekly Tips"), Icons.tips_and_updates),
             const SizedBox(height: 12),
             _buildInfoCard(context, weekData['tips']),
           ],

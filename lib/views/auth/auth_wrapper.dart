@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../views/features/mood_tracker_screen.dart';
+import '../../main.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../dashboard/patient_dashboard.dart';
@@ -10,6 +12,10 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Bypass authentication for testing if flag is set
+    if (kBypassAuth) {
+      return const MoodTrackerScreen();
+    }
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {

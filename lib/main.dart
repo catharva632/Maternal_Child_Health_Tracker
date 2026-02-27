@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'controllers/theme_controller.dart';
+import 'controllers/settings_controller.dart';
 import 'views/auth/welcome_screen.dart';
-import 'views/auth/login_choice_screen.dart';
-import 'views/auth/patient_login_screen.dart';
-import 'views/auth/doctor_login_screen.dart';
+import 'views/auth/login_screen.dart';
 import 'views/auth/signup_choice_screen.dart';
 import 'views/signup/signup_step1.dart';
 import 'views/signup/signup_step2.dart';
@@ -24,6 +24,7 @@ import 'views/menu/settings_screen.dart';
 import 'views/menu/report_screen.dart';
 import 'views/menu/about_screen.dart';
 import 'views/menu/contacts_screen.dart';
+import 'views/menu/profile_screen.dart';
 import 'views/features/dna_mode_screen.dart';
 import 'views/features/weekly_development_detail_screen.dart';
 import 'views/features/mood_tracker_screen.dart';
@@ -31,6 +32,9 @@ import 'views/features/badges_screen.dart';
 import 'views/features/cultural_wisdom_screen.dart';
 
 import 'views/auth/auth_wrapper.dart';
+
+// Debug flag to bypass authentication flow for testing Mood Tracker
+const bool kBypassAuth = false;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,14 +51,20 @@ class MaternalHealthTrackerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: ThemeController().themeMode,
-      builder: (context, mode, child) {
-        return MaterialApp(
-          title: 'Maternal Child Health Tracker',
-          themeMode: mode,
-          theme: _buildLightTheme(),
-          darkTheme: _buildDarkTheme(),
-          home: const PatientDashboard(),
-          routes: _getRoutes(),
+      builder: (context, themeMode, child) {
+        return ValueListenableBuilder<String>(
+          valueListenable: SettingsController().language,
+          builder: (context, lang, child) {
+            return MaterialApp(
+              key: ValueKey(lang), // Force rebuild of the entire app on language change
+              title: 'Maternal Child Health Tracker',
+              themeMode: themeMode,
+              theme: _buildLightTheme(),
+              darkTheme: _buildDarkTheme(),
+              home: const AuthWrapper(),
+              routes: _getRoutes(),
+            );
+          },
         );
       },
     );
@@ -100,9 +110,7 @@ class MaternalHealthTrackerApp extends StatelessWidget {
 
   Map<String, WidgetBuilder> _getRoutes() {
     return {
-      '/loginChoice': (context) => const LoginChoiceScreen(),
-      '/patientLogin': (context) => const PatientLoginScreen(),
-      '/doctorLogin': (context) => const DoctorLoginScreen(),
+      '/login': (context) => const LoginScreen(),
       '/signupChoice': (context) => const SignupChoiceScreen(),
       '/signup1': (context) => const SignupStep1(),
       '/signup2': (context) => const SignupStep2(),
@@ -129,6 +137,7 @@ class MaternalHealthTrackerApp extends StatelessWidget {
       '/report': (context) => const ReportScreen(),
       '/about': (context) => const AboutScreen(),
       '/contacts': (context) => const ContactsScreen(),
+      '/profile': (context) => const ProfileScreen(),
     };
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../controllers/patient_controller.dart';
+import '../../controllers/settings_controller.dart';
 import '../../models/patient_model.dart';
 
 class MilestonesScreen extends StatelessWidget {
@@ -32,7 +33,7 @@ class MilestonesScreen extends StatelessWidget {
         if (week > 26) trimester = "3rd";
 
         return Scaffold(
-          appBar: AppBar(title: const Text('Pregnancy Milestones')),
+          appBar: AppBar(title: Text(SettingsController().tr('Pregnancy Milestones'))),
           body: snapshot.connectionState == ConnectionState.waiting
               ? const Center(child: CircularProgressIndicator())
               : SingleChildScrollView(
@@ -42,10 +43,10 @@ class MilestonesScreen extends StatelessWidget {
                       _buildTopCard(context, week, trimester, progress),
                       const SizedBox(height: 20),
                         _buildFeatureList(context, [
-                        {'title': 'My Achievements', 'subtitle': 'View your badges & progress', 'route': '/badges', 'icon': Icons.emoji_events},
-                        {'title': 'Weekly Development', 'subtitle': 'Week $week details', 'route': '/weeklyDevelopment', 'arguments': {'week': week}, 'icon': Icons.child_care},
-                        {'title': 'Mood Tracker', 'subtitle': 'Emotional well-being', 'route': '/moodTracker', 'icon': Icons.mood},
-                        {'title': 'Cultural Wisdom', 'subtitle': 'Traditional tips & facts', 'route': '/culturalWisdom', 'icon': Icons.brightness_high},
+                        {'title': SettingsController().tr('My Achievements'), 'subtitle': SettingsController().tr('View your badges & progress'), 'route': '/badges', 'icon': Icons.emoji_events},
+                        {'title': SettingsController().tr('Weekly Development'), 'subtitle': '${SettingsController().tr('Week')} $week ${SettingsController().tr('Weekly details')}', 'route': '/weeklyDevelopment', 'arguments': {'week': week}, 'icon': Icons.child_care},
+                        {'title': SettingsController().tr('Mood Tracker'), 'subtitle': SettingsController().tr('Emotional well-being'), 'route': '/moodTracker', 'icon': Icons.mood},
+                        {'title': SettingsController().tr('Cultural Wisdom'), 'subtitle': SettingsController().tr('Traditional tips & facts'), 'route': '/culturalWisdom', 'icon': Icons.brightness_high},
                       ]),
                     ],
                   ),
@@ -65,12 +66,12 @@ class MilestonesScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Week $week', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                Text('$trimester Trimester', style: const TextStyle(color: Colors.white70)),
+                Text('${SettingsController().tr('Week')} $week', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                Text('$trimester ${SettingsController().tr('Trimester')}', style: const TextStyle(color: Colors.white70)),
               ],
             ),
             const SizedBox(height: 10),
-            Text('Baby size: ${_getBabySize(week)}', style: const TextStyle(color: Colors.white)),
+            Text('${SettingsController().tr('Baby size')}: ${_getBabySize(week)}', style: const TextStyle(color: Colors.white)),
             const SizedBox(height: 20),
             LinearProgressIndicator(
               value: progress,

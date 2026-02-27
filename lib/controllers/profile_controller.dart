@@ -73,4 +73,17 @@ class ProfileController {
       );
     }
   }
+
+  Future<void> updateProfile(BuildContext context, String uid, Map<String, dynamic> data) async {
+    try {
+      await _db.collection('users').doc(uid).update(data);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile updated successfully!')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update profile: $e')),
+      );
+    }
+  }
 }

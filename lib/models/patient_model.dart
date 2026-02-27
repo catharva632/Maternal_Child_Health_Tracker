@@ -7,6 +7,7 @@ class PatientModel {
   String pincode;
   String state;
   int pregnancyWeek;
+  int age;
   double weight;
   double height;
   List<String> medicalConditions;
@@ -20,6 +21,10 @@ class PatientModel {
   bool? isWorkingProfessional;
   bool? isHighRisk;
   bool? isFirstBaby;
+  String? uid;
+  List<Map<String, String>> vaccinations;
+  List<Map<String, String>> appointments;
+  Map<String, Map<String, String>> dietPlan;
   List<String> badges;
 
   PatientModel({
@@ -31,6 +36,7 @@ class PatientModel {
     required this.pincode,
     required this.state,
     this.pregnancyWeek = 0,
+    this.age = 0,
     this.weight = 0.0,
     this.height = 0.0,
     this.medicalConditions = const [],
@@ -44,6 +50,10 @@ class PatientModel {
     this.isWorkingProfessional,
     this.isHighRisk,
     this.isFirstBaby,
+    this.uid,
+    this.vaccinations = const [],
+    this.appointments = const [],
+    this.dietPlan = const {},
     this.badges = const [],
   });
 
@@ -57,6 +67,7 @@ class PatientModel {
       'pincode': pincode,
       'state': state,
       'pregnancyWeek': pregnancyWeek,
+      'age': age,
       'weight': weight,
       'height': height,
       'medicalConditions': medicalConditions,
@@ -70,6 +81,10 @@ class PatientModel {
       'isWorkingProfessional': isWorkingProfessional,
       'isHighRisk': isHighRisk,
       'isFirstBaby': isFirstBaby,
+      'uid': uid,
+      'vaccinations': vaccinations,
+      'appointments': appointments,
+      'dietPlan': dietPlan,
       'badges': badges,
       'role': 'patient',
     };
@@ -85,6 +100,7 @@ class PatientModel {
       pincode: map['pincode'] ?? '',
       state: map['state'] ?? '',
       pregnancyWeek: map['pregnancyWeek'] ?? 0,
+      age: map['age'] ?? 0,
       weight: map['weight']?.toDouble() ?? 0.0,
       height: map['height']?.toDouble() ?? 0.0,
       medicalConditions: List<String>.from(map['medicalConditions'] ?? []),
@@ -98,6 +114,17 @@ class PatientModel {
       isWorkingProfessional: map['isWorkingProfessional'],
       isHighRisk: map['isHighRisk'],
       isFirstBaby: map['isFirstBaby'],
+      uid: map['uid'],
+      vaccinations: List<Map<String, String>>.from(
+        (map['vaccinations'] ?? []).map((v) => Map<String, String>.from(v)),
+      ),
+      appointments: List<Map<String, String>>.from(
+        (map['appointments'] ?? []).map((a) => Map<String, String>.from(a)),
+      ),
+      dietPlan: (map['dietPlan'] as Map<String, dynamic>?)?.map(
+            (k, v) => MapEntry(k, Map<String, String>.from(v)),
+          ) ??
+          {},
       badges: List<String>.from(map['badges'] ?? []),
     );
   }

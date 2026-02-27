@@ -52,6 +52,11 @@ dependencies:
   tflite_v2: ^1.0.0
   camera: ^0.10.5+5
   permission_handler: ^11.0.1
+  video_player: ^2.8.2
+  audioplayers: ^5.2.1
+  pdf: ^3.11.3
+  printing: ^5.14.2
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:
@@ -78,6 +83,8 @@ flutter:
   assets:
     - assets/images/
     - assets/models/
+    - assets/grantha_sounds/
+    - video/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

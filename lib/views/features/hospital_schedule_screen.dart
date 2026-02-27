@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../controllers/patient_controller.dart';
+import '../../controllers/settings_controller.dart';
 import '../../models/patient_model.dart';
 
 class HospitalScheduleScreen extends StatefulWidget {
@@ -62,7 +63,7 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
           body: SafeArea(
             child: Column(
               children: [
-                _buildDoctorCard(doctorName, hospitalName, doctorPhone, hospitalLocation, week),
+                _buildDoctorCard(patient, doctorName, hospitalName, doctorPhone, hospitalLocation, week),
                 const SizedBox(height: 20),
                 _buildTabBar(),
                 Expanded(
@@ -70,7 +71,7 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
                         controller: _tabController,
                     children: [
                        _buildVisitsTab(week),
-                       _buildVaccinationTab(week),
+                       _buildVaccinationTab(week, patient?.vaccinations ?? []),
                        _buildHospitalInfoTab(doctorName, hospitalName, hospitalPhone, hospitalAddress, hospitalLocation),
                     ],
                   ),
@@ -83,7 +84,7 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
     );
   }
 
-  Widget _buildDoctorCard(String doctorName, String hospitalName, String doctorPhone, String hospitalLocation, int week) {
+  Widget _buildDoctorCard(PatientModel? patient, String doctorName, String hospitalName, String doctorPhone, String hospitalLocation, int week) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.3,
       margin: const EdgeInsets.all(16),
@@ -109,9 +110,9 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Your Doctor',
-                style: TextStyle(color: Colors.white70, fontSize: 16),
+              Text(
+                SettingsController().tr('Your Doctor'),
+                style: const TextStyle(color: Colors.white70, fontSize: 16),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -120,7 +121,7 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  'Week $week',
+                  '${SettingsController().tr('Week')} $week',
                   style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -136,13 +137,13 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
             style: const TextStyle(color: Colors.white, fontSize: 16),
           ),
           const Spacer(),
-          const Text(
-            'Next Appointment',
-            style: TextStyle(color: Colors.white70, fontSize: 14),
+          Text(
+            SettingsController().tr('Next Appointment'),
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
           ),
-          const Text(
-            'Scheduled Soon',
-            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+          Text(
+            SettingsController().tr(_getNextAppointmentDate(patient?.appointments ?? [])),
+            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           Row(
@@ -151,7 +152,7 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
                 child: ElevatedButton.icon(
                   onPressed: () => _makeCall(doctorPhone),
                   icon: const Icon(Icons.call, size: 18),
-                  label: const Text('Call Doctor'),
+                  label: Text(SettingsController().tr('Call Doctor')),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: const Color(0xFFE91E63),
@@ -165,7 +166,7 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
                 child: ElevatedButton.icon(
                   onPressed: () => _launchUrl(hospitalLocation),
                   icon: const Icon(Icons.local_hospital, size: 18),
-                  label: const Text('View Hospital'),
+                  label: Text(SettingsController().tr('View Hospital')),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white.withOpacity(0.2),
                     foregroundColor: Colors.white,
@@ -200,10 +201,10 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
           unselectedLabelColor: Colors.grey,
           dividerColor: Colors.transparent,
           indicatorSize: TabBarIndicatorSize.tab,
-          tabs: const [
-            Tab(text: 'Doctor Visits'),
-            Tab(text: 'Vaccination'),
-            Tab(text: 'Hospital Info'),
+          tabs: [
+            Tab(text: SettingsController().tr('Doctor Visits')),
+            Tab(text: SettingsController().tr('Vaccination')),
+            Tab(text: SettingsController().tr('Hospital Info')),
           ],
         ),
       ),
@@ -231,15 +232,15 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
         Color iconColor;
 
         if (currentWeek >= targetWeek) {
-          status = 'Completed';
+          status = SettingsController().tr('Completed');
           icon = Icons.check_circle;
           iconColor = Colors.green;
         } else if (targetWeek - currentWeek <= 2) {
-          status = 'Upcoming';
+          status = SettingsController().tr('Upcoming');
           icon = Icons.access_time_filled;
           iconColor = Colors.orange;
         } else {
-          status = 'Pending';
+          status = SettingsController().tr('Pending');
           icon = Icons.radio_button_unchecked;
           iconColor = Colors.grey;
         }
@@ -262,7 +263,7 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
               ),
               child: Icon(icon, color: iconColor),
             ),
-            title: Text(visit['name'] as String, style: const TextStyle(fontWeight: FontWeight.bold)),
+            title: Text(SettingsController().tr(visit['name'] as String), style: const TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Text(status, style: TextStyle(color: iconColor)),
             trailing: const Icon(Icons.chevron_right, color: Colors.grey),
           ),
@@ -271,7 +272,7 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
     );
   }
 
-  Widget _buildVaccinationTab(int currentWeek) {
+  Widget _buildVaccinationTab(int currentWeek, List<Map<String, String>> customVaccines) {
     bool isCompleted(String time) {
       if (time == '1st Trimester') return currentWeek >= 1;
       if (time == '2nd Trimester') return currentWeek >= 14;
@@ -305,10 +306,19 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        _buildSectionTitle("Mother's Vaccination Schedule"),
+        if (customVaccines.isNotEmpty) ...[
+          _buildSectionTitle(SettingsController().tr("Doctor's Prescribed Vaccinations")),
+          ...customVaccines.map((v) => _buildVaccineCard({
+                'name': v['name'] ?? 'Unknown',
+                'time': v['date'] ?? 'No date',
+                'desc': SettingsController().tr('Scheduled by your doctor'),
+              }, checked: false)),
+          const SizedBox(height: 24),
+        ],
+        _buildSectionTitle(SettingsController().tr("Mother's Vaccination Schedule")),
         ...motherVaccines.map((v) => _buildVaccineCard(v, checked: isCompleted(v['time']!))),
         const SizedBox(height: 24),
-        _buildSectionTitle("Child's Vaccination Schedule (Birth - 3 Months)"),
+        _buildSectionTitle(SettingsController().tr("Child's Vaccination Schedule (Birth - 3 Months)")),
         ...childVaccines.map((v) => _buildVaccineCard(v, isChild: true, checked: false)),
       ],
     );
@@ -350,8 +360,8 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
             color: isChild ? Colors.blue : const Color(0xFFE91E63),
           ),
         ),
-        title: Text(v['name']!, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text('${v['time']} • ${v['desc']}'),
+        title: Text(SettingsController().tr(v['name']!), style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text('${SettingsController().tr(v['time']!)} • ${SettingsController().tr(v['desc']!)}'),
         trailing: Checkbox(
           value: checked,
           onChanged: (val) {},
@@ -377,16 +387,16 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Doctor Name:', style: TextStyle(color: Colors.grey, fontSize: 14)),
+              Text(SettingsController().tr('Doctor Name:'), style: const TextStyle(color: Colors.grey, fontSize: 14)),
               Text(doctorName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
               const SizedBox(height: 16),
-              const Text('Hospital:', style: TextStyle(color: Colors.grey, fontSize: 14)),
+              Text(SettingsController().tr('Hospital:'), style: const TextStyle(color: Colors.grey, fontSize: 14)),
               Text(hospitalName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
               const SizedBox(height: 16),
-              const Text('Phone:', style: TextStyle(color: Colors.grey, fontSize: 14)),
-              Text(hospitalPhone.isEmpty ? 'Not Available' : hospitalPhone, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              Text(SettingsController().tr('Phone:'), style: const TextStyle(color: Colors.grey, fontSize: 14)),
+              Text(hospitalPhone.isEmpty ? SettingsController().tr('Not Available') : hospitalPhone, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
               const SizedBox(height: 16),
-              const Text('Address:', style: TextStyle(color: Colors.grey, fontSize: 14)),
+              Text(SettingsController().tr('Address:'), style: const TextStyle(color: Colors.grey, fontSize: 14)),
               Text(hospitalAddress, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
               const SizedBox(height: 32),
               Row(
@@ -395,7 +405,7 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
                     child: ElevatedButton.icon(
                       onPressed: () => _makeCall(hospitalPhone),
                       icon: const Icon(Icons.call),
-                      label: const Text('Call'),
+                      label: Text(SettingsController().tr('Call')),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFF48FB1),
                         foregroundColor: Colors.white,
@@ -409,7 +419,7 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
                     child: OutlinedButton.icon(
                       onPressed: () => _launchUrl(hospitalLocation),
                       icon: const Icon(Icons.map),
-                      label: const Text('Open Map'),
+                      label: Text(SettingsController().tr('Open Map')),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFFF48FB1),
                         side: const BorderSide(color: Color(0xFFF48FB1)),
@@ -425,5 +435,14 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
         ),
       ),
     );
+  }
+
+  String _getNextAppointmentDate(List<Map<String, String>> appointments) {
+    if (appointments.isEmpty) return 'Scheduled Soon';
+    final today = DateTime.now().toString().split(' ')[0];
+    final upcoming = appointments.where((a) => (a['date'] ?? '').compareTo(today) >= 0).toList();
+    if (upcoming.isEmpty) return 'No Upcoming';
+    upcoming.sort((a, b) => (a['date'] ?? '').compareTo(b['date'] ?? ''));
+    return upcoming.first['date'] ?? 'Scheduled Soon';
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import '../../controllers/settings_controller.dart';
 
 
 class LlmScreen extends StatefulWidget {
@@ -40,6 +41,7 @@ class _LlmScreenState extends State<LlmScreen> {
   @override
   void initState() {
     super.initState();
+    selectedLanguage = SettingsController().language.value;
     _initSpeech();
     /// 🔹 Listen to scroll position
     _scrollController.addListener(() {
@@ -236,13 +238,13 @@ class _LlmScreenState extends State<LlmScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Maternal Health Tracker", 
-              style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
-            Text("AI Assistant",
-                style: TextStyle(fontSize: 12, color: Colors.white70)),
+            Text(SettingsController().tr("Maternal Health Tracker"), 
+              style: const TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
+            Text(SettingsController().tr("AI Assistant"),
+                style: const TextStyle(fontSize: 12, color: Colors.white70)),
           ],
         ),
         actions: [
@@ -263,6 +265,7 @@ class _LlmScreenState extends State<LlmScreen> {
               onChanged: (newValue) {
                 if (newValue != null) {
                   setState(() => selectedLanguage = newValue);
+                  SettingsController().setLanguage(newValue);
                 }
               },
             ),
@@ -339,7 +342,7 @@ class _LlmScreenState extends State<LlmScreen> {
                                         onPressed: () {
                                           Clipboard.setData(ClipboardData(text: msg["text"]));
                                           ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(content: Text("Copied to clipboard")),
+                                            SnackBar(content: Text(SettingsController().tr("Copied to clipboard"))),
                                           );
                                         },
                                       ),
@@ -365,12 +368,11 @@ class _LlmScreenState extends State<LlmScreen> {
               ),
 
               if (isLoading || isTyping)
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 6),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
                   child: Text(
-                    "Assistant is typing...",
-                    style:
-                        TextStyle(color: Color(0xFFF48FB1), fontSize: 12),
+                    SettingsController().tr("Assistant is typing..."),
+                    style: const TextStyle(color: Color(0xFFF48FB1), fontSize: 12),
                   ),
                 ),
 
@@ -385,7 +387,7 @@ class _LlmScreenState extends State<LlmScreen> {
                         style:
                             const TextStyle(color: Colors.black87),
                         decoration: InputDecoration(
-                          hintText: "Type a message...",
+                          hintText: SettingsController().tr("Type a message..."),
                           hintStyle:
                               const TextStyle(color: Colors.grey),
                           prefixIcon: IconButton(

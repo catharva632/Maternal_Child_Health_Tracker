@@ -17,7 +17,8 @@ class ExerciseController {
           'Avoid walking in extreme heat.',
           'Stop if you feel dizzy or short of breath.'
         ],
-        imagePath: 'https://images.unsplash.com/photo-1518310383802-640c2de311b2?w=800'
+        imagePath: 'assets/images/walking.jpeg',
+        videoId: 'Qd4QBIoKrJM',
       ),
       ExerciseModel(
         name: 'Swimming',
@@ -33,7 +34,8 @@ class ExerciseController {
           'Ensure the water temperature is comfortable.',
           'Watch out for slippery pool decks.'
         ],
-        imagePath: 'https://images.unsplash.com/photo-1620352080112-984422e11e55?w=800'
+        imagePath: 'assets/images/swimming.jpeg',
+        videoId: 'VyF5J5yXTxI',
       ),
       ExerciseModel(
         name: 'Prenatal Yoga',
@@ -49,7 +51,8 @@ class ExerciseController {
           'Don\'t overstretch joints; focus on muscle tone.',
           'Avoid hot yoga.'
         ],
-        imagePath: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800'
+        imagePath: 'assets/images/parental yoga.jpeg',
+        videoId: 'B87FpWtkIKA',
       ),
       ExerciseModel(
         name: 'Squats',
@@ -65,7 +68,8 @@ class ExerciseController {
           'Keep your back straight.',
           'Stop if you feel pressure in your pelvis.'
         ],
-        imagePath: 'https://images.unsplash.com/photo-1510616022830-2972986f3769?w=800'
+        imagePath: 'assets/images/squats.jpeg',
+        videoId: 'baCXyqhmuN4',
       ),
       ExerciseModel(
         name: 'Kegels',
@@ -80,7 +84,8 @@ class ExerciseController {
           'Don\'t do them while urinating (can cause UTIs).',
           'Ensure you breathe normally while squeezing.'
         ],
-        imagePath: 'https://images.unsplash.com/photo-1571731956622-39fe583942af?w=800'
+        imagePath: 'assets/images/kegels.jpeg',
+        videoId: 'nBfbJ-3tUdc',
       ),
       ExerciseModel(
         name: 'Cat-Cow Stretch',
@@ -95,7 +100,8 @@ class ExerciseController {
           'Avoid excessive arching of the back.',
           'Keep your movements fluid and gentle.'
         ],
-        imagePath: 'https://images.unsplash.com/photo-1582213706480-1a646c827376?w=800'
+        imagePath: 'assets/images/cat cow stretch.jpeg',
+        videoId: '9uY-vvV4Lgc',
       ),
       ExerciseModel(
         name: 'Modified Push-ups',
@@ -110,7 +116,8 @@ class ExerciseController {
           'Avoid any strain on your abdominal wall.',
           'Perform them slowly to maintain control.'
         ],
-        imagePath: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800'
+        imagePath: 'assets/images/modified push ups.jpeg',
+        videoId: 'XEs0XQuOpO4',
       ),
     ];
   }

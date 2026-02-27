@@ -14,14 +14,14 @@ class SignupChoiceScreen extends StatelessWidget {
           children: [
             _buildChoiceCard(
               context,
-              'Signup as Patient',
+              'Register as Patient',
               Icons.person_add_outlined,
               () => Navigator.pushNamed(context, '/signup1'),
             ),
             const SizedBox(height: 20),
             _buildChoiceCard(
               context,
-              'Signup as Doctor',
+              'Register as Doctor',
               Icons.person_add_alt_1_outlined,
               () => Navigator.pushNamed(context, '/doctorSignup'),
             ),

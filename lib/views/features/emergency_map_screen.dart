@@ -5,6 +5,7 @@ import '../../controllers/sos_controller.dart';
 import '../../controllers/patient_controller.dart';
 import '../../models/patient_model.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../controllers/settings_controller.dart';
 
 class EmergencyMapScreen extends StatefulWidget {
   const EmergencyMapScreen({super.key});
@@ -130,11 +131,11 @@ class _EmergencyMapScreenState extends State<EmergencyMapScreen> {
                 ),
                 const SizedBox(width: 12),
                 const Icon(Icons.location_on, size: 16, color: Colors.grey),
-                Text(' ${distance.toStringAsFixed(1)} km away', style: const TextStyle(color: Colors.grey)),
+                Text(' ${distance.toStringAsFixed(1)}${SettingsController().tr(' km away')}', style: const TextStyle(color: Colors.grey)),
               ],
             ),
             const SizedBox(height: 20),
-            Text('Contact: ${hospital['phone']}', style: const TextStyle(fontSize: 16)),
+            Text('${SettingsController().tr('Contact')}: ${hospital['phone']}', style: const TextStyle(fontSize: 16)),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
@@ -142,7 +143,7 @@ class _EmergencyMapScreenState extends State<EmergencyMapScreen> {
               child: ElevatedButton.icon(
                 onPressed: () => launchUrl(Uri.parse('tel:${hospital['phone']}')),
                 icon: const Icon(Icons.call),
-                label: const Text('Call Now'),
+                label: Text(SettingsController().tr('Call Now')),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                   foregroundColor: Colors.white,
@@ -161,7 +162,7 @@ class _EmergencyMapScreenState extends State<EmergencyMapScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Emergency Assistance', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: Text(SettingsController().tr('Emergency Assistance'), style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
         elevation: 0,
         leading: const BackButton(color: Colors.black),
@@ -251,9 +252,9 @@ class _EmergencyMapScreenState extends State<EmergencyMapScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _buildQuickContact('Ambulance', Icons.airport_shuttle, '108'),
-                          _buildQuickContact('My Hospital', Icons.local_hospital, patient?.hospitalPhone ?? ''),
-                          _buildQuickContact('My Doctor', Icons.person, patient?.doctorPhone ?? ''),
+                          _buildQuickContact(SettingsController().tr('Ambulance'), Icons.airport_shuttle, '108'),
+                          _buildQuickContact(SettingsController().tr('My Hospital'), Icons.local_hospital, patient?.hospitalPhone ?? ''),
+                          _buildQuickContact(SettingsController().tr('My Doctor'), Icons.person, patient?.doctorPhone ?? ''),
                         ],
                       ),
                     ],
@@ -272,14 +273,14 @@ class _EmergencyMapScreenState extends State<EmergencyMapScreen> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.warning, color: Colors.red),
-            SizedBox(width: 10),
-            Text('SOS Triggered'),
+            const Icon(Icons.warning, color: Colors.red),
+            const SizedBox(width: 10),
+            Text(SettingsController().tr('SOS Triggered')),
           ],
         ),
-        content: const Text('Help is being notified. We are contacting your doctor, family, and nearby hospitals.'),
+        content: Text(SettingsController().tr('Help is being notified. We are contacting your doctor, family, and nearby hospitals.')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

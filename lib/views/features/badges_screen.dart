@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../controllers/patient_controller.dart';
+import '../../controllers/settings_controller.dart';
 import '../../models/patient_model.dart';
 
 class BadgesScreen extends StatelessWidget {
@@ -15,7 +16,7 @@ class BadgesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('My Achievements')),
+      appBar: AppBar(title: Text(SettingsController().tr('My Achievements'))),
       body: StreamBuilder<PatientModel?>(
         stream: PatientController().getPatientStream(),
         builder: (context, snapshot) {
@@ -61,7 +62,7 @@ class BadgesScreen extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       child: Text(
-                        badge['title'],
+                        SettingsController().tr(badge['title']),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -72,7 +73,7 @@ class BadgesScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      isUnlocked ? "Unlocked!" : "Locked",
+                      isUnlocked ? SettingsController().tr("Unlocked!") : SettingsController().tr("Locked"),
                       style: TextStyle(
                         color: isUnlocked ? badge['color'] : Colors.grey,
                         fontSize: 12,

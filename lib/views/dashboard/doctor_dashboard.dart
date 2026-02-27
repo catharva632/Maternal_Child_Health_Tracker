@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../controllers/patient_controller.dart';
 import '../../controllers/auth_controller.dart';
 import '../../models/patient_model.dart';
+import 'patient_edit_screen.dart';
 
 class DoctorDashboard extends StatefulWidget {
   const DoctorDashboard({super.key});
@@ -52,6 +53,64 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildDoctorHeader(doctorName),
+          StreamBuilder<List<PatientModel>>(
+            stream: PatientController().getPatientsForDoctor(doctorName),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return const SizedBox.shrink();
+              
+              final today = DateTime.now().toString().split(' ')[0];
+              final patientsToday = snapshot.data!.where((p) {
+                return p.appointments.any((a) => a['date'] == today);
+              }).toList();
+
+              if (patientsToday.isEmpty) return const SizedBox.shrink();
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    child: Text(
+                      "Today's Schedule",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFAD1457)),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 100,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: patientsToday.length,
+                      itemBuilder: (context, index) {
+                        final patient = patientsToday[index];
+                        final appointment = patient.appointments.firstWhere((a) => a['date'] == today);
+                        return Container(
+                          width: 160,
+                          margin: const EdgeInsets.only(right: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.pink.shade50,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.pink.shade100),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(patient.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                              const SizedBox(height: 4),
+                              Text(appointment['time'] ?? 'No time', style: const TextStyle(color: Colors.pink, fontSize: 12)),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const Divider(height: 30, indent: 20, endIndent: 20),
+                ],
+              );
+            },
+          ),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Text(
@@ -129,7 +188,12 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
         subtitle: Text('Week: ${patient.pregnancyWeek} | ${patient.city}'),
         trailing: const Icon(Icons.chevron_right),
         onTap: () {
-          // Future: Navigate to patient details
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PatientEditScreen(patient: patient),
+            ),
+          );
         },
       ),
     );

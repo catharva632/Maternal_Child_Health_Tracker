@@ -4,6 +4,7 @@ class ExerciseModel {
   final List<String> steps;
   final List<String> precautions;
   final String imagePath;
+  final String videoId;
 
   ExerciseModel({
     required this.name,
@@ -11,5 +12,6 @@ class ExerciseModel {
     required this.steps,
     required this.precautions,
     required this.imagePath,
+    required this.videoId,
   });
 }

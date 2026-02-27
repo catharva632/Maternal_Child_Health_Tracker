@@ -3,6 +3,7 @@ import '../../controllers/patient_controller.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/theme_controller.dart';
 import '../../controllers/profile_controller.dart';
+import '../../controllers/settings_controller.dart';
 import '../../models/patient_model.dart';
 import 'package:intl/intl.dart';
 
@@ -21,7 +22,7 @@ class PatientDashboard extends StatelessWidget {
             
             return Scaffold(
               appBar: AppBar(
-                title: const Text('Maternal Tracker'),
+                title: Text(SettingsController().tr('Pregnancy Progress')),
                 actions: [
                   Builder(
                     builder: (context) => IconButton(
@@ -48,11 +49,11 @@ class PatientDashboard extends StatelessWidget {
                               mainAxisSpacing: 16,
                               crossAxisSpacing: 16,
                               children: [
-                                _buildDashboardCard(context, 'Pregnancy\nMilestones', Icons.auto_graph, '/milestones'),
-                                _buildDashboardCard(context, 'Hospital &\nVaccination', Icons.vaccines, '/hospital'),
-                                _buildDashboardCard(context, 'Chatbot', Icons.chat_bubble_outline, '/chatbot'),
-                                _buildDashboardCard(context, 'Exercise &\nDiet', Icons.restaurant_menu, '/exercise'),
-                                 _buildDashboardCard(context, 'Emergency\nHelpline', Icons.emergency, '/emergencyMap'),
+                                _buildDashboardCard(context, SettingsController().tr('Milestones'), Icons.auto_graph, '/milestones'),
+                                _buildDashboardCard(context, SettingsController().tr('Hospital Schedule'), Icons.vaccines, '/hospital'),
+                                _buildDashboardCard(context, SettingsController().tr('Ask AI Assistant'), Icons.chat_bubble_outline, '/chatbot'),
+                                _buildDashboardCard(context, SettingsController().tr('Exercise & Diet'), Icons.restaurant_menu, '/exercise'),
+                                 _buildDashboardCard(context, SettingsController().tr('Emergency Map'), Icons.emergency, '/emergencyMap'),
                               ],
                             ),
                           ),
@@ -97,11 +98,11 @@ class PatientDashboard extends StatelessWidget {
                       name,
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                    Text('$week Weeks Pregnant', style: const TextStyle(color: Colors.grey)),
+                    Text('$week ${SettingsController().tr('Weeks Pregnant')}', style: const TextStyle(color: Colors.grey)),
                     const SizedBox(height: 8),
-                    Text('Trimester: $trimester', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text('${SettingsController().tr('Trimester')}: $trimester', style: const TextStyle(fontWeight: FontWeight.bold)),
                     if (patient?.doctorName != null)
-                      Text('Doctor: ${patient!.doctorName}', style: const TextStyle(fontSize: 12)),
+                      Text('${SettingsController().tr('Doctor')}: ${patient!.doctorName}', style: const TextStyle(fontSize: 12)),
                   ],
                 ),
               ),
@@ -137,7 +138,7 @@ class PatientDashboard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Pregnancy Progress', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                  Text(SettingsController().tr('Pregnancy Progress'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                   Text('${(progress * 100).toInt()}%', style: const TextStyle(fontSize: 12)),
                 ],
               ),
@@ -198,22 +199,15 @@ class PatientDashboard extends StatelessWidget {
               ],
             ),
           ),
-          _buildDrawerItem(context, 'Settings', Icons.settings, '/settings'),
-          ListTile(
-            leading: const Icon(Icons.palette_outlined),
-            title: const Text('Dark Mode'),
-            trailing: Switch(
-              value: isDark,
-              onChanged: (val) => ThemeController().toggleTheme(val),
-            ),
-          ),
-          _buildDrawerItem(context, 'Generate Report', Icons.picture_as_pdf_outlined, '/report'),
-          _buildDrawerItem(context, 'About', Icons.info_outline, '/about'),
-           _buildDrawerItem(context, 'My Contacts', Icons.contact_phone_outlined, '/contacts'),
-           const Divider(),
+          _buildDrawerItem(context, SettingsController().tr('Profile'), Icons.person_outline, '/profile'),
+          _buildDrawerItem(context, SettingsController().tr('My Contacts'), Icons.contact_phone_outlined, '/contacts'),
+          _buildDrawerItem(context, SettingsController().tr('Generate Report'), Icons.picture_as_pdf_outlined, '/report'),
+          _buildDrawerItem(context, SettingsController().tr('Settings'), Icons.settings, '/settings'),
+          _buildDrawerItem(context, SettingsController().tr('About'), Icons.info_outline, '/about'),
+          const Divider(),
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text('Logout', style: TextStyle(color: Colors.red)),
+            title: Text(SettingsController().tr('Logout'), style: const TextStyle(color: Colors.red)),
             onTap: () => AuthController().signOut(context),
           ),
         ],

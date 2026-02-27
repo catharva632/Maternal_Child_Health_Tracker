@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../controllers/patient_controller.dart';
 import '../../controllers/gamification_controller.dart';
+import '../../controllers/settings_controller.dart';
 import '../../models/patient_model.dart';
 
 class DnaModeScreen extends StatefulWidget {
@@ -20,7 +21,7 @@ class _DnaModeScreenState extends State<DnaModeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Pregnancy DNA Mode')),
+      appBar: AppBar(title: Text(SettingsController().tr('Pregnancy DNA Mode'))),
       body: StreamBuilder<PatientModel?>(
         stream: PatientController().getPatientStream(),
         builder: (context, snapshot) {
@@ -45,28 +46,31 @@ class _DnaModeScreenState extends State<DnaModeScreen> {
                 _buildIntro(),
                 const SizedBox(height: 32),
                 _buildQuestionCard(
-                  title: "1. Diet Preference",
-                  options: ["Vegetarian", "Non-Veg"],
-                  selectedValue: _diet,
-                  onChanged: (val) => setState(() => _diet = val),
+                  title: SettingsController().tr("1. Diet Preference"),
+                  options: [SettingsController().tr("Vegetarian"), SettingsController().tr("Non-Veg")],
+                  selectedValue: _diet == null ? null : SettingsController().tr(_diet!),
+                  onChanged: (val) {
+                    if (val == SettingsController().tr("Vegetarian")) setState(() => _diet = "Vegetarian");
+                    if (val == SettingsController().tr("Non-Veg")) setState(() => _diet = "Non-Veg");
+                  },
                 ),
                 _buildQuestionCard(
-                  title: "2. Are you a working professional?",
-                  options: ["Yes", "No"],
-                  selectedValue: _isWorking == null ? null : (_isWorking! ? "Yes" : "No"),
-                  onChanged: (val) => setState(() => _isWorking = val == "Yes"),
+                  title: SettingsController().tr("2. Are you a working professional?"),
+                  options: [SettingsController().tr("Yes"), SettingsController().tr("No")],
+                  selectedValue: _isWorking == null ? null : (_isWorking! ? SettingsController().tr("Yes") : SettingsController().tr("No")),
+                  onChanged: (val) => setState(() => _isWorking = val == SettingsController().tr("Yes")),
                 ),
                 _buildQuestionCard(
-                  title: "3. Is this a high-risk pregnancy?",
-                  options: ["Yes", "No"],
-                  selectedValue: _isHighRisk == null ? null : (_isHighRisk! ? "Yes" : "No"),
-                  onChanged: (val) => setState(() => _isHighRisk = val == "Yes"),
+                  title: SettingsController().tr("3. Is this a high-risk pregnancy?"),
+                  options: [SettingsController().tr("Yes"), SettingsController().tr("No")],
+                  selectedValue: _isHighRisk == null ? null : (_isHighRisk! ? SettingsController().tr("Yes") : SettingsController().tr("No")),
+                  onChanged: (val) => setState(() => _isHighRisk = val == SettingsController().tr("Yes")),
                 ),
                 _buildQuestionCard(
-                  title: "4. Is this your first baby?",
-                  options: ["Yes", "No"],
-                  selectedValue: _isFirstBaby == null ? null : (_isFirstBaby! ? "Yes" : "No"),
-                  onChanged: (val) => setState(() => _isFirstBaby = val == "Yes"),
+                  title: SettingsController().tr("4. Is this your first baby?"),
+                  options: [SettingsController().tr("Yes"), SettingsController().tr("No")],
+                  selectedValue: _isFirstBaby == null ? null : (_isFirstBaby! ? SettingsController().tr("Yes") : SettingsController().tr("No")),
+                  onChanged: (val) => setState(() => _isFirstBaby = val == SettingsController().tr("Yes")),
                 ),
                 const SizedBox(height: 40),
                 SizedBox(
@@ -81,14 +85,14 @@ class _DnaModeScreenState extends State<DnaModeScreen> {
                     ),
                     child: _isLoading 
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Generate My Personalized Path", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      : Text(SettingsController().tr("Generate My Personalized Path"), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Center(
+                Center(
                   child: Text(
-                    "This helps us tailor your milestones and tips.",
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                    SettingsController().tr("This helps us tailor your milestones and tips."),
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
                   ),
                 ),
               ],
@@ -104,13 +108,13 @@ class _DnaModeScreenState extends State<DnaModeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Let's create your Personalized Pregnancy Path",
+          SettingsController().tr("Let's create your Personalized Pregnancy Path"),
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
         ),
         const SizedBox(height: 8),
-        const Text(
-          "Every pregnancy is unique. Answer these quick questions to unlock a plan that works for you.",
-          style: TextStyle(color: Colors.grey),
+        Text(
+          SettingsController().tr("Every pregnancy is unique. Answer these quick questions to unlock a plan that works for you."),
+          style: const TextStyle(color: Colors.grey),
         ),
       ],
     );
@@ -160,7 +164,7 @@ class _DnaModeScreenState extends State<DnaModeScreen> {
   Future<void> _saveDnaProfile() async {
     if (_diet == null || _isWorking == null || _isHighRisk == null || _isFirstBaby == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please answer all questions")),
+        SnackBar(content: Text(SettingsController().tr("Please answer all questions"))),
       );
       return;
     }
@@ -176,7 +180,7 @@ class _DnaModeScreenState extends State<DnaModeScreen> {
       await GamificationController().unlockBadge('dna_dna');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Profile Updated! Your path is being personalized.")),
+          SnackBar(content: Text(SettingsController().tr("Profile Updated! Your path is being personalized."))),
         );
         Navigator.pop(context);
       }
