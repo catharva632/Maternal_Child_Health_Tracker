@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:home_widget/home_widget.dart';
 import 'controllers/theme_controller.dart';
 import 'controllers/settings_controller.dart';
+import 'controllers/sos_controller.dart';
+import 'models/patient_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'views/auth/welcome_screen.dart';
 import 'views/auth/login_screen.dart';
 import 'views/auth/signup_choice_screen.dart';
@@ -36,11 +41,32 @@ import 'views/auth/auth_wrapper.dart';
 // Debug flag to bypass authentication flow for testing Mood Tracker
 const bool kBypassAuth = false;
 
+@pragma('vm:entry-point')
+Future<void> homeWidgetBackgroundCallback(Uri? uri) async {
+  if (uri?.host == 'sos_action') {
+    WidgetsFlutterBinding.ensureInitialized();
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (doc.exists) {
+        final patient = PatientModel.fromMap(doc.data()!);
+        await SOSController().startSOS(patient);
+      }
+    }
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  
+  // Register background callback for home widget
+  HomeWidget.registerBackgroundCallback(homeWidgetBackgroundCallback);
+  
   runApp(const MaternalHealthTrackerApp());
 }
 

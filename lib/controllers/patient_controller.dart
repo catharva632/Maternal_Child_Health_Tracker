@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:home_widget/home_widget.dart';
 import '../models/patient_model.dart';
 import '../models/doctor_model.dart';
 
@@ -114,8 +115,22 @@ class PatientController {
 
     return _db.collection('users').doc(user.uid).snapshots().map((snapshot) {
       if (!snapshot.exists || snapshot.data() == null) return null;
-      return PatientModel.fromMap(snapshot.data()!);
+      final patient = PatientModel.fromMap(snapshot.data()!);
+      _syncToWidget(patient);
+      return patient;
     });
+  }
+
+  Future<void> _syncToWidget(PatientModel patient) async {
+    try {
+      await HomeWidget.saveWidgetData<String>('patient_name', patient.name);
+      await HomeWidget.saveWidgetData<String>('doctor_phone', patient.doctorPhone ?? '');
+      await HomeWidget.saveWidgetData<String>('hospital_phone', patient.hospitalPhone ?? '');
+      await HomeWidget.saveWidgetData<String>('patient_uid', patient.uid ?? '');
+      await HomeWidget.updateWidget(name: 'SOSWidgetProvider', androidName: 'SOSWidgetProvider');
+    } catch (e) {
+      debugPrint("HomeWidget sync error: $e");
+    }
   }
 
   Stream<List<PatientModel>> getPatientsForDoctor(String doctorName) {
