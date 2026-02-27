@@ -187,6 +187,33 @@ class SOSController {
     return r * c;
   }
 
+  /// Generates synthetic hospitals within a 1-2km radius for a given location.
+  /// Useful for testing/demo when the user is outside Pune.
+  List<Map<String, dynamic>> generateNearbyHospitals(double lat, double lng) {
+    final List<Map<String, dynamic>> synthetic = [];
+    final Random random = Random();
+
+    final names = ['Local Maternity Center', 'Nearby Women\'s Clinic', 'Community Support Hospital'];
+    final types = ['Clinic', 'Clinic', 'Hospital'];
+    final phones = ['020-99998888', '020-77776666', '020-55554444'];
+
+    for (int i = 0; i < 3; i++) {
+      // Offset by roughly 0.005 to 0.015 degrees (~0.5km to 1.5km)
+      double offsetLat = (random.nextDouble() - 0.5) * 0.02; 
+      double offsetLng = (random.nextDouble() - 0.5) * 0.02;
+
+      synthetic.add({
+        'name': names[i],
+        'type': types[i],
+        'phone': phones[i],
+        'lat': lat + offsetLat,
+        'lng': lng + offsetLng,
+      });
+    }
+
+    return synthetic;
+  }
+
   double _toRadians(double degree) {
     return degree * pi / 180;
   }

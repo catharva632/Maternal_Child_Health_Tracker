@@ -35,7 +35,7 @@ class _EmergencyMapScreenState extends State<EmergencyMapScreen> {
           CameraUpdate.newCameraPosition(
             CameraPosition(
               target: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-              zoom: 15, // Closer zoom to see local area
+              zoom: 15.5, // Tighter zoom for local view
             ),
           ),
         );
@@ -50,31 +50,53 @@ class _EmergencyMapScreenState extends State<EmergencyMapScreen> {
 
   void _loadHospitalMarkers() {
     _markers.clear();
-    final hospitals = SOSController().localHospitals;
+    if (_currentPosition == null) return; // Wait for location before showing markers
+
     final sos = SOSController();
+    final hospitals = sos.localHospitals;
+    List<Map<String, dynamic>> matches = [];
     
+    // 1. Check hardcoded mock hospitals
     for (var hospital in hospitals) {
-      double distance = 0;
-      if (_currentPosition != null) {
-        distance = sos.calculateDistance(
+      double distance = sos.calculateDistance(
+        _currentPosition!.latitude,
+        _currentPosition!.longitude,
+        hospital['lat'],
+        hospital['lng'],
+      );
+
+      if (distance <= 2.0) {
+        matches.add({...hospital, 'distance': distance});
+      }
+    }
+
+    // 2. If nothing is within 2km (e.g. user is far from Pune Pune), generate local ones for demo
+    if (matches.isEmpty) {
+      final synthetic = sos.generateNearbyHospitals(
+        _currentPosition!.latitude, 
+        _currentPosition!.longitude
+      );
+      for (var hospital in synthetic) {
+        double distance = sos.calculateDistance(
           _currentPosition!.latitude,
           _currentPosition!.longitude,
           hospital['lat'],
           hospital['lng'],
         );
+        matches.add({...hospital, 'distance': distance});
       }
+    }
 
-      // Only show if no position yet (initial load) or within 2km
-      if (_currentPosition == null || distance <= 2.0) {
-        _markers.add(
-          Marker(
-            markerId: MarkerId(hospital['name']),
-            position: LatLng(hospital['lat'], hospital['lng']),
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-            onTap: () => _showHospitalPopup(hospital, distance),
-          ),
-        );
-      }
+    // 3. Add markers for all matched/generated hospitals
+    for (var hospital in matches) {
+      _markers.add(
+        Marker(
+          markerId: MarkerId(hospital['name']),
+          position: LatLng(hospital['lat'], hospital['lng']),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+          onTap: () => _showHospitalPopup(hospital, hospital['distance']),
+        ),
+      );
     }
     setState(() {});
   }
