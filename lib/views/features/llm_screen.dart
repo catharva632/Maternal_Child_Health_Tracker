@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
-import 'package:flutter_tts/flutter_tts.dart';
 
 
 class LlmScreen extends StatefulWidget {
@@ -35,7 +34,6 @@ class _LlmScreenState extends State<LlmScreen> {
   // Voice System
   stt.SpeechToText _speech = stt.SpeechToText();
   bool _isListening = false;
-  FlutterTts flutterTts = FlutterTts();
 
   String _timeNow() => DateFormat('hh:mm a').format(DateTime.now());
 
@@ -65,11 +63,6 @@ class _LlmScreenState extends State<LlmScreen> {
     } catch (e) {
       debugPrint("Speech init error: $e");
     }
-  }
-
-  Future<void> _speak(String text) async {
-    await flutterTts.setLanguage(selectedLanguage == "Hindi" ? "hi-IN" : selectedLanguage == "Marathi" ? "mr-IN" : "en-US");
-    await flutterTts.speak(text);
   }
 
   void _listen() async {
@@ -139,9 +132,6 @@ class _LlmScreenState extends State<LlmScreen> {
 
     isTyping = false;
     _scrollToBottom(force: true);
-    
-    // Audibly respond
-    _speak(fullText);
   }
 
   /// 🔹 Send message
