@@ -24,6 +24,8 @@ class PatientController {
     required String city,
     required String pincode,
     required String state,
+    required String abhaId,
+    required int age,
     String? password,
   }) {
     currentPatient = PatientModel(
@@ -34,6 +36,8 @@ class PatientController {
       city: city,
       pincode: pincode,
       state: state,
+      abhaId: abhaId,
+      age: age,
     );
     tempPassword = password;
   }
@@ -43,12 +47,14 @@ class PatientController {
     required double weight,
     required double height,
     required List<String> conditions,
+    required String diet,
   }) {
     if (currentPatient != null) {
       currentPatient!.pregnancyWeek = week;
       currentPatient!.weight = weight;
       currentPatient!.height = height;
       currentPatient!.medicalConditions = conditions;
+      currentPatient!.diet = diet;
     }
   }
 
@@ -57,8 +63,6 @@ class PatientController {
       currentPatient!.doctorName = doctor.name;
       currentPatient!.doctorPhone = doctor.phone;
       currentPatient!.hospitalName = doctor.clinicName;
-      // We can also use hospitalPhone if DoctorModel had one, 
-      // otherwise reuse clinic phone or a mock receptionist number for now.
       currentPatient!.hospitalPhone = doctor.phone; 
       currentPatient!.hospitalAddress = doctor.address;
     }
@@ -72,6 +76,12 @@ class PatientController {
       return;
     }
 
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
     try {
       UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: currentPatient!.email,
@@ -79,12 +89,19 @@ class PatientController {
       );
 
       if (userCredential.user != null) {
+        currentPatient!.uid = userCredential.user!.uid;
         await _db.collection('users').doc(userCredential.user!.uid).set(
           currentPatient!.toMap()
         );
-        Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
+
+        if (context.mounted) Navigator.pop(context);
+
+        if (context.mounted) {
+          Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
+        }
       }
     } catch (e) {
+      if (context.mounted) Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Registration Failed: $e")),
       );
@@ -93,25 +110,7 @@ class PatientController {
 
   Stream<PatientModel?> getPatientStream() {
     final user = _auth.currentUser;
-    
-    // For Development/Login Bypass: return a mock patient if not logged in
-    if (user == null) {
-      return Stream.value(PatientModel(
-        name: "Test Patient",
-        email: "test@example.com",
-        phone: "9876543210",
-        address: "Sample Address, Pune",
-        city: "Pune",
-        pincode: "411001",
-        state: "Maharashtra",
-        pregnancyWeek: 12,
-        doctorName: "Dr. Anjali Patil",
-        doctorPhone: "9823456789",
-        hospitalName: "Life Care Hospital",
-        hospitalPhone: "020-24451234",
-        hospitalAddress: "Sadashiv Peth, Pune",
-      ));
-    }
+    if (user == null) return Stream.value(null);
 
     return _db.collection('users').doc(user.uid).snapshots().map((snapshot) {
       if (!snapshot.exists || snapshot.data() == null) return null;
@@ -165,5 +164,17 @@ class PatientController {
 
   Future<void> updatePatientMetadata(String patientId, Map<String, dynamic> updates) async {
     await _db.collection('users').doc(patientId).update(updates);
+  }
+
+  Stream<List<DoctorModel>> getDoctorsStream() {
+    return _db
+        .collection('users')
+        .where('role', isEqualTo: 'doctor')
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) => DoctorModel.fromMap(doc.data()))
+          .toList();
+    });
   }
 }

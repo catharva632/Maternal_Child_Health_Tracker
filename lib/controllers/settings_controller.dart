@@ -800,6 +800,51 @@ class SettingsController {
       'Hindi': 'जन्म',
       'Marathi': 'जन्म',
     },
+    'ABHA ID': {
+      'English': 'ABHA ID',
+      'Hindi': 'आभा आईडी',
+      'Marathi': 'आभा आयडी',
+    },
+    'Pincode': {
+      'English': 'Pincode',
+      'Hindi': 'पिनकोड',
+      'Marathi': 'पिनकोड',
+    },
+    'State': {
+      'English': 'State',
+      'Hindi': 'राज्य',
+      'Marathi': 'राज्य',
+    },
+    'Pregnancy Week': {
+      'English': 'Pregnancy Week',
+      'Hindi': 'गर्भावस्था सप्ताह',
+      'Marathi': 'गर्भधारणेचा आठवडा',
+    },
+    'Weight (kg)': {
+      'English': 'Weight (kg)',
+      'Hindi': 'वजन (किग्रा)',
+      'Marathi': 'वजन (किलो)',
+    },
+    'Height (cm)': {
+      'English': 'Height (cm)',
+      'Hindi': 'ऊंचाई (सेमी)',
+      'Marathi': 'उंची (सेमी)',
+    },
+    'Specialization': {
+      'English': 'Specialization',
+      'Hindi': 'विशेषज्ञता',
+      'Marathi': 'विशेषज्ञता',
+    },
+    'Clinic Name': {
+      'English': 'Clinic Name',
+      'Hindi': 'क्लिनिक का नाम',
+      'Marathi': 'क्लिनिकचे नाव',
+    },
+    'Next': {
+      'English': 'Next',
+      'Hindi': 'अगला',
+      'Marathi': 'पुढील',
+    },
     '6 Weeks': {
       'English': '6 Weeks',
       'Hindi': '6 सप्ताह',
@@ -941,6 +986,8 @@ class SettingsController {
     if (!_translations.containsKey(key)) return key;
     return _translations[key]![language.value] ?? key;
   }
+
+  String translate(String key) => tr(key);
 
   void toggleNotifications(bool enabled) {
     notificationsEnabled.value = enabled;

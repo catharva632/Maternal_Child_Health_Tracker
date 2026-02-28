@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../controllers/patient_controller.dart';
+import '../../controllers/settings_controller.dart';
 
 class SignupStep2 extends StatefulWidget {
   const SignupStep2({super.key});
@@ -14,6 +15,7 @@ class _SignupStep2State extends State<SignupStep2> {
   final _heightController = TextEditingController();
   final List<String> _allConditions = ['None', 'Diabetes', 'Thyroid', 'Anemia', 'High BP'];
   final List<String> _selectedConditions = [];
+  String? _selectedDiet;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +31,19 @@ class _SignupStep2State extends State<SignupStep2> {
             _buildTextField(_weightController, 'Weight (kg)', Icons.monitor_weight_outlined, isNumber: true),
             _buildTextField(_heightController, 'Height (cm)', Icons.height_outlined, isNumber: true),
             const SizedBox(height: 10),
+            DropdownButtonFormField<String>(
+              value: _selectedDiet,
+              decoration: InputDecoration(
+                labelText: 'Dietary Preference',
+                prefixIcon: const Icon(Icons.restaurant_outlined),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              items: ['Vegetarian', 'Non-Veg'].map((diet) {
+                return DropdownMenuItem(value: diet, child: Text(diet));
+              }).toList(),
+              onChanged: (value) => setState(() => _selectedDiet = value),
+            ),
+            const SizedBox(height: 20),
             const Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -70,19 +85,31 @@ class _SignupStep2State extends State<SignupStep2> {
               height: 55,
               child: ElevatedButton(
                 onPressed: () {
+                  if (_weekController.text.isEmpty ||
+                      _weightController.text.isEmpty ||
+                      _heightController.text.isEmpty ||
+                      _selectedDiet == null ||
+                      _selectedConditions.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('All fields are compulsory')),
+                    );
+                    return;
+                  }
                   PatientController().saveMedicalDetails(
                     week: int.tryParse(_weekController.text) ?? 0,
                     weight: double.tryParse(_weightController.text) ?? 0.0,
                     height: double.tryParse(_heightController.text) ?? 0.0,
                     conditions: _selectedConditions,
+                    diet: _selectedDiet!,
                   );
-                  Navigator.pushNamed(context, '/signup3');
+                  if (mounted) Navigator.pushNamed(context, '/signup3');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFF48FB1),
                   foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('Next', style: TextStyle(fontSize: 18)),
+                child: Text(SettingsController().translate('Next'), style: const TextStyle(fontSize: 18)),
               ),
             ),
           ],
@@ -123,9 +150,9 @@ class _SignupStep2State extends State<SignupStep2> {
         controller: controller,
         keyboardType: isNumber ? TextInputType.number : TextInputType.text,
         decoration: InputDecoration(
-          labelText: label,
+          labelText: SettingsController().translate(label),
           prefixIcon: Icon(icon),
-          border: const OutlineInputBorder(),
+          border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
         ),
       ),
     );

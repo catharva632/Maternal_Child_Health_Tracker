@@ -6,6 +6,7 @@ class PatientModel {
   String city;
   String pincode;
   String state;
+  String abhaId;
   int pregnancyWeek;
   int age;
   double weight;
@@ -35,6 +36,7 @@ class PatientModel {
     required this.city,
     required this.pincode,
     required this.state,
+    required this.abhaId,
     this.pregnancyWeek = 0,
     this.age = 0,
     this.weight = 0.0,
@@ -66,6 +68,7 @@ class PatientModel {
       'city': city,
       'pincode': pincode,
       'state': state,
+      'abhaId': abhaId,
       'pregnancyWeek': pregnancyWeek,
       'age': age,
       'weight': weight,
@@ -99,6 +102,7 @@ class PatientModel {
       city: map['city'] ?? '',
       pincode: map['pincode'] ?? '',
       state: map['state'] ?? '',
+      abhaId: map['abhaId'] ?? '',
       pregnancyWeek: map['pregnancyWeek'] ?? 0,
       age: map['age'] ?? 0,
       weight: map['weight']?.toDouble() ?? 0.0,

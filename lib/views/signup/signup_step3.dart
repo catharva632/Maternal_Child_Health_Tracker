@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../controllers/patient_controller.dart';
 import '../../models/doctor_model.dart';
+import '../../widgets/doctor_card.dart';
 
 class SignupStep3 extends StatelessWidget {
   const SignupStep3({super.key});
@@ -8,25 +9,63 @@ class SignupStep3 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Doctor Details')),
+      appBar: AppBar(title: const Text('Select Doctor')),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
             _buildTimeline(3),
-            const SizedBox(height: 50),
-            _buildChoiceCard(
-              context,
-              'Yes, I have a Doctor',
-              Icons.check_circle_outline,
-              () => _showDoctorDetailsDialog(context),
+            const SizedBox(height: 30),
+            const Text(
+              'Select your registered doctor from the list below to complete registration.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 20),
-            _buildChoiceCard(
-              context,
-              "No, I don't have a Doctor",
-              Icons.help_outline,
-              () => Navigator.pushNamed(context, '/selectDoctor'),
+            Expanded(
+              child: StreamBuilder<List<DoctorModel>>(
+                stream: PatientController().getDoctorsStream(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  
+                  final doctors = snapshot.data ?? [];
+                  if (doctors.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.person_search, size: 64, color: Colors.grey),
+                          const SizedBox(height: 16),
+                          const Text('No doctors registered yet.\nPlease come back later or skip.', textAlign: TextAlign.center),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    itemCount: doctors.length,
+                    itemBuilder: (context, index) {
+                      final doctor = doctors[index];
+                      return DoctorCard(
+                        doctor: doctor,
+                        onTap: () {
+                           _showConfirmDialog(context, doctor);
+                        },
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 20),
+            TextButton(
+              onPressed: () => PatientController().registerPatient(context),
+              child: Text(
+                'Skip / Register without Doctor',
+                style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -34,80 +73,28 @@ class SignupStep3 extends StatelessWidget {
     );
   }
 
-  void _showDoctorDetailsDialog(BuildContext context) {
-    final nameController = TextEditingController();
-    final hospitalController = TextEditingController();
-    final phoneController = TextEditingController();
-    final clinicPhoneController = TextEditingController();
-    final addressController = TextEditingController();
-
+  void _showConfirmDialog(BuildContext context, DoctorModel doctor) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Doctor Details'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildDialogField(nameController, 'Doctor Name'),
-              _buildDialogField(hospitalController, 'Clinic/Hospital Name'),
-              _buildDialogField(phoneController, 'Doctor Phone'),
-              _buildDialogField(clinicPhoneController, 'Clinic Contact No'),
-              _buildDialogField(addressController, 'Clinic Address'),
-            ],
-          ),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Confirm Doctor'),
+        content: Text('Do you want to register with Dr. ${doctor.name} at ${doctor.clinicName}?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () {
-              final doctor = DoctorModel(
-                name: nameController.text,
-                clinicName: hospitalController.text,
-                phone: phoneController.text, // Doctor Phone
-                address: addressController.text,
-                rating: 0.0,
-                distance: 'Manual Entry',
-              );
-              PatientController().saveDoctorDetails(doctor);
               Navigator.pop(context);
+              PatientController().saveDoctorDetails(doctor);
               PatientController().registerPatient(context);
             },
-            child: const Text('Submit'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF48FB1),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Register'),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildDialogField(TextEditingController controller, String label) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: TextField(
-        controller: controller,
-        decoration: InputDecoration(labelText: label, border: const OutlineInputBorder()),
-      ),
-    );
-  }
-
-  Widget _buildChoiceCard(BuildContext context, String title, IconData icon, VoidCallback onTap) {
-    return Card(
-      elevation: 4,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-          child: Row(
-            children: [
-              Icon(icon, size: 40, color: const Color(0xFFF48FB1)),
-              const SizedBox(width: 20),
-              Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const Spacer(),
-              const Icon(Icons.arrow_forward_ios, size: 16),
-            ],
-          ),
-        ),
       ),
     );
   }

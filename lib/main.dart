@@ -11,12 +11,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'views/auth/welcome_screen.dart';
 import 'views/auth/login_screen.dart';
-import 'views/auth/signup_choice_screen.dart';
 import 'views/signup/signup_step1.dart';
 import 'views/signup/signup_step2.dart';
 import 'views/signup/signup_step3.dart';
 import 'views/signup/doctor_signup.dart';
-import 'views/signup/select_doctor_screen.dart';
 import 'views/dashboard/patient_dashboard.dart';
 import 'views/dashboard/doctor_dashboard.dart';
 import 'views/features/milestones_screen.dart';
@@ -172,12 +170,10 @@ class _MaternalHealthTrackerAppState extends State<MaternalHealthTrackerApp> {
   Map<String, WidgetBuilder> _getRoutes() {
     return {
       '/login': (context) => const LoginScreen(),
-      '/signupChoice': (context) => const SignupChoiceScreen(),
       '/signup1': (context) => const SignupStep1(),
       '/signup2': (context) => const SignupStep2(),
       '/signup3': (context) => const SignupStep3(),
       '/doctorSignup': (context) => const DoctorSignup(),
-      '/selectDoctor': (context) => const SelectDoctorScreen(),
       '/dashboard': (context) => const PatientDashboard(),
       '/doctorDashboard': (context) => const DoctorDashboard(),
       '/milestones': (context) => const MilestonesScreen(),

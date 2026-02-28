@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../controllers/patient_controller.dart';
+import '../../controllers/settings_controller.dart';
 
 class SignupStep1 extends StatefulWidget {
   const SignupStep1({super.key});
@@ -16,6 +17,8 @@ class _SignupStep1State extends State<SignupStep1> {
   final _cityController = TextEditingController();
   final _pincodeController = TextEditingController();
   final _stateController = TextEditingController();
+  final _abhaIdController = TextEditingController();
+  final _ageController = TextEditingController();
   final _passwordController = TextEditingController();
 
   @override
@@ -30,7 +33,7 @@ class _SignupStep1State extends State<SignupStep1> {
             const SizedBox(height: 30),
             _buildTextField(_nameController, 'Name', Icons.person_outline),
             _buildTextField(_emailController, 'Email', Icons.email_outlined),
-            _buildTextField(_phoneController, 'Phone', Icons.phone_outlined),
+            _buildTextField(_phoneController, 'Phone', Icons.phone_outlined, isNumber: true, maxLength: 10),
             _buildTextField(_addressController, 'Address', Icons.home_outlined),
             Row(
               children: [
@@ -40,6 +43,8 @@ class _SignupStep1State extends State<SignupStep1> {
               ],
             ),
             _buildTextField(_stateController, 'State', Icons.map_outlined),
+            _buildTextField(_abhaIdController, 'ABHA ID', Icons.badge_outlined, maxLength: 14, hint: '12345678901234'),
+            _buildTextField(_ageController, 'Age', Icons.cake_outlined, isNumber: true),
             _buildTextField(_passwordController, 'Password', Icons.lock_outline, isPassword: true),
             const SizedBox(height: 40),
             SizedBox(
@@ -47,6 +52,21 @@ class _SignupStep1State extends State<SignupStep1> {
               height: 55,
               child: ElevatedButton(
                 onPressed: () {
+                  if (_nameController.text.isEmpty ||
+                      _emailController.text.isEmpty ||
+                      _phoneController.text.isEmpty ||
+                      _addressController.text.isEmpty ||
+                      _cityController.text.isEmpty ||
+                      _pincodeController.text.isEmpty ||
+                      _stateController.text.isEmpty ||
+                      _abhaIdController.text.isEmpty ||
+                      _ageController.text.isEmpty ||
+                      _passwordController.text.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('All fields are compulsory')),
+                    );
+                    return;
+                  }
                   PatientController().savePersonalDetails(
                     name: _nameController.text,
                     email: _emailController.text,
@@ -55,15 +75,18 @@ class _SignupStep1State extends State<SignupStep1> {
                     city: _cityController.text,
                     pincode: _pincodeController.text,
                     state: _stateController.text,
+                    abhaId: _abhaIdController.text,
+                    age: int.tryParse(_ageController.text) ?? 0,
                     password: _passwordController.text,
                   );
-                  Navigator.pushNamed(context, '/signup2');
+                  if (mounted) Navigator.pushNamed(context, '/signup2');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFF48FB1),
                   foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('Next', style: TextStyle(fontSize: 18)),
+                child: Text(SettingsController().translate('Next'), style: const TextStyle(fontSize: 18)),
               ),
             ),
           ],
@@ -97,17 +120,21 @@ class _SignupStep1State extends State<SignupStep1> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, IconData icon, {bool isNumber = false, bool isPassword = false}) {
+  Widget _buildTextField(TextEditingController controller, String label, IconData icon, 
+      {bool isNumber = false, bool isPassword = false, int? maxLength, String? hint}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: TextField(
         controller: controller,
         keyboardType: isNumber ? TextInputType.number : TextInputType.text,
         obscureText: isPassword,
+        maxLength: maxLength,
         decoration: InputDecoration(
-          labelText: label,
+          labelText: SettingsController().translate(label),
+          hintText: hint != null ? SettingsController().translate(hint) : null,
           prefixIcon: Icon(icon),
-          border: const OutlineInputBorder(),
+          border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+          counterText: "",
         ),
       ),
     );

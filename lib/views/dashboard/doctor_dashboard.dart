@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../controllers/patient_controller.dart';
 import '../../controllers/auth_controller.dart';
+import '../../controllers/settings_controller.dart';
 import '../../models/patient_model.dart';
 import 'patient_edit_screen.dart';
 
@@ -14,6 +15,7 @@ class DoctorDashboard extends StatefulWidget {
 class _DoctorDashboardState extends State<DoctorDashboard> {
   Map<String, dynamic>? _doctorProfile;
   bool _isLoading = true;
+  String _currentView = 'dashboard'; // dashboard, patients, opd
 
   @override
   void initState() {
@@ -41,103 +43,199 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Doctor Dashboard'),
+        title: Text(_currentView == 'dashboard' 
+          ? SettingsController().translate('Doctor Dashboard') 
+          : _currentView == 'patients' ? SettingsController().translate('Your Patients') : SettingsController().translate('OPD Appointments')),
+        leading: _currentView != 'dashboard' 
+          ? IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => setState(() => _currentView = 'dashboard'),
+            )
+          : null,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.red),
-            onPressed: () => AuthController().signOut(context),
+          Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () => Scaffold.of(context).openEndDrawer(),
+            ),
           ),
         ],
       ),
+      endDrawer: _buildDrawer(doctorName),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildDoctorHeader(doctorName),
-          StreamBuilder<List<PatientModel>>(
-            stream: PatientController().getPatientsForDoctor(doctorName),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) return const SizedBox.shrink();
-              
-              final today = DateTime.now().toString().split(' ')[0];
-              final patientsToday = snapshot.data!.where((p) {
-                return p.appointments.any((a) => a['date'] == today);
-              }).toList();
+          Expanded(
+            child: _buildBody(doctorName),
+          ),
+        ],
+      ),
+    );
+  }
 
-              if (patientsToday.isEmpty) return const SizedBox.shrink();
+  Widget _buildBody(String doctorName) {
+    switch (_currentView) {
+      case 'patients':
+        return _buildPatientsView(doctorName);
+      case 'opd':
+        return _buildOPDView(doctorName);
+      default:
+        return _buildDashboardGrid();
+    }
+  }
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    child: Text(
-                      "Today's Schedule",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFAD1457)),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 100,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: patientsToday.length,
-                      itemBuilder: (context, index) {
-                        final patient = patientsToday[index];
-                        final appointment = patient.appointments.firstWhere((a) => a['date'] == today);
-                        return Container(
-                          width: 160,
-                          margin: const EdgeInsets.only(right: 12),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.pink.shade50,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.pink.shade100),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(patient.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                              const SizedBox(height: 4),
-                              Text(appointment['time'] ?? 'No time', style: const TextStyle(color: Colors.pink, fontSize: 12)),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const Divider(height: 30, indent: 20, endIndent: 20),
-                ],
-              );
+  Widget _buildDashboardGrid() {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: GridView.count(
+        crossAxisCount: 2,
+        mainAxisSpacing: 20,
+        crossAxisSpacing: 20,
+        children: [
+          _buildDashboardCard(
+            SettingsController().translate('Your Patients'), 
+            Icons.people_outline, 
+            () => setState(() => _currentView = 'patients')
+          ),
+          _buildDashboardCard(
+            SettingsController().translate('OPD'), 
+            Icons.calendar_today_outlined, 
+            () => setState(() => _currentView = 'opd')
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDashboardCard(String title, IconData icon, VoidCallback onTap) {
+    return Card(
+      elevation: 4,
+      shadowColor: Colors.pink.withOpacity(0.2),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 40, color: Theme.of(context).colorScheme.primary),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPatientsView(String doctorName) {
+    return StreamBuilder<List<PatientModel>>(
+      stream: PatientController().getPatientsForDoctor(doctorName),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        
+        final patients = snapshot.data ?? [];
+        if (patients.isEmpty) {
+          return const Center(child: Text('No patients assigned yet.'));
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          itemCount: patients.length,
+          itemBuilder: (context, index) => _buildPatientCard(patients[index]),
+        );
+      },
+    );
+  }
+
+  Widget _buildOPDView(String doctorName) {
+    return StreamBuilder<List<PatientModel>>(
+      stream: PatientController().getPatientsForDoctor(doctorName),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        
+        final today = DateTime.now().toString().split(' ')[0];
+        final opdPatients = (snapshot.data ?? []).where((p) {
+          return p.appointments.any((a) => a['date'] == today);
+        }).toList();
+
+        if (opdPatients.isEmpty) {
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.event_busy, size: 64, color: Colors.grey),
+                SizedBox(height: 16),
+                Text('No appointments scheduled for today.', style: TextStyle(color: Colors.grey)),
+              ],
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          itemCount: opdPatients.length,
+          itemBuilder: (context, index) {
+            final patient = opdPatients[index];
+            final appointment = patient.appointments.firstWhere((a) => a['date'] == today);
+            return _buildPatientCard(patient, subtitleOverride: 'Time: ${appointment['time']}');
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildDrawer(String doctorName) {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                const CircleAvatar(backgroundColor: Colors.white, child: Icon(Icons.person)),
+                const SizedBox(height: 10),
+                Text(doctorName, style: const TextStyle(color: Colors.white, fontSize: 24)),
+              ],
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.dashboard_outlined),
+            title: const Text('Dashboard'),
+            onTap: () {
+              Navigator.pop(context);
+              setState(() => _currentView = 'dashboard');
             },
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Text(
-              'Your Patients',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+          ListTile(
+            leading: const Icon(Icons.person_outline),
+            title: const Text('Profile'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/profile');
+            },
           ),
-          Expanded(
-            child: StreamBuilder<List<PatientModel>>(
-              stream: PatientController().getPatientsForDoctor(doctorName),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                
-                final patients = snapshot.data ?? [];
-                if (patients.isEmpty) {
-                  return const Center(child: Text('No patients assigned yet.'));
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: patients.length,
-                  itemBuilder: (context, index) => _buildPatientCard(patients[index]),
-                );
-              },
-            ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.logout, color: Colors.red),
+            onTap: () => AuthController().signOut(context),
           ),
         ],
       ),
@@ -176,17 +274,20 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
     );
   }
 
-  Widget _buildPatientCard(PatientModel patient) {
+  Widget _buildPatientCard(PatientModel patient, {String? subtitleOverride}) {
     return Card(
+      elevation: 2,
       margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: CircleAvatar(
           backgroundColor: Theme.of(context).colorScheme.secondary,
           child: const Icon(Icons.person, color: Colors.pink),
         ),
         title: Text(patient.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text('Week: ${patient.pregnancyWeek} | ${patient.city}'),
-        trailing: const Icon(Icons.chevron_right),
+        subtitle: Text(subtitleOverride ?? 'Week: ${patient.pregnancyWeek} | ${patient.city}'),
+        trailing: const Icon(Icons.chevron_right, color: Colors.grey),
         onTap: () {
           Navigator.push(
             context,

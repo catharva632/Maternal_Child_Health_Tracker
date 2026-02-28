@@ -3,8 +3,7 @@ class DoctorModel {
   final String clinicName;
   final String phone;
   final String address;
-  final double rating;
-  final String distance;
+  final String? specialization;
   final String? imagePath;
 
   DoctorModel({
@@ -12,8 +11,30 @@ class DoctorModel {
     required this.clinicName,
     required this.phone,
     required this.address,
-    required this.rating,
-    required this.distance,
+    this.specialization,
     this.imagePath,
   });
+
+  factory DoctorModel.fromMap(Map<String, dynamic> map) {
+    return DoctorModel(
+      name: map['name'] ?? '',
+      clinicName: map['clinicName'] ?? '',
+      phone: map['phone'] ?? '',
+      address: map['address'] ?? '',
+      specialization: map['specialization'] ?? 'Medical Professional',
+      imagePath: map['imagePath'],
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'clinicName': clinicName,
+      'phone': phone,
+      'address': address,
+      'specialization': specialization,
+      'imagePath': imagePath,
+      'role': 'doctor',
+    };
+  }
 }

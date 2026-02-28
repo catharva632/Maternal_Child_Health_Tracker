@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../controllers/auth_controller.dart';
+import '../../controllers/settings_controller.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,7 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _handleLogin() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter both ID and Password")),
+        SnackBar(content: Text(SettingsController().translate("Please enter both ID and Password"))),
       );
       return;
     }
@@ -58,7 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 24),
               Center(
                 child: Text(
-                  'Welcome Back',
+                  SettingsController().translate('Welcome Back'),
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.primary,
@@ -66,15 +67,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 48),
-              const Text(
-                'Login to your account',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              Text(
+                SettingsController().translate('Login to your account'),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: _emailController,
                 decoration: InputDecoration(
-                  labelText: 'Email / ID',
+                  labelText: SettingsController().translate('Email / ID'),
                   prefixIcon: const Icon(Icons.email_outlined),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -86,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 controller: _passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
-                  labelText: 'Password',
+                  labelText: SettingsController().translate('Password'),
                   prefixIcon: const Icon(Icons.lock_outline),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -108,18 +109,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: _isLoading 
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Login', style: TextStyle(fontSize: 18)),
+                    : Text(SettingsController().translate('Login'), style: const TextStyle(fontSize: 18)),
                 ),
               ),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text("Don't have an account? "),
+                  Text(SettingsController().translate("Don't have an account? ")),
                   GestureDetector(
-                    onTap: () => Navigator.pushNamed(context, '/signupChoice'),
+                    onTap: () => Navigator.pushNamed(context, '/signup1'),
                     child: Text(
-                      "Create an account",
+                      SettingsController().translate("Create an account"),
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.primary,
                         fontWeight: FontWeight.bold,
@@ -149,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     'https://w7.pngwing.com/pngs/326/85/png-transparent-google-logo-google-text-trademark-logo-thumbnail.png',
                     height: 24,
                   ),
-                  label: const Text('Login with Gmail', style: TextStyle(fontSize: 16, color: Colors.black87)),
+                  label: Text(SettingsController().translate('Login with Gmail'), style: const TextStyle(fontSize: 16, color: Colors.black87)),
                   style: OutlinedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
