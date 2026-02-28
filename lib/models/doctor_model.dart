@@ -5,6 +5,8 @@ class DoctorModel {
   final String address;
   final String? specialization;
   final String? imagePath;
+  final String? distance;
+  final double? rating;
 
   DoctorModel({
     required this.name,
@@ -13,6 +15,8 @@ class DoctorModel {
     required this.address,
     this.specialization,
     this.imagePath,
+    this.distance,
+    this.rating,
   });
 
   factory DoctorModel.fromMap(Map<String, dynamic> map) {
@@ -23,6 +27,8 @@ class DoctorModel {
       address: map['address'] ?? '',
       specialization: map['specialization'] ?? 'Medical Professional',
       imagePath: map['imagePath'],
+      distance: map['distance'],
+      rating: map['rating']?.toDouble(),
     );
   }
 
@@ -34,6 +40,8 @@ class DoctorModel {
       'address': address,
       'specialization': specialization,
       'imagePath': imagePath,
+      'distance': distance,
+      'rating': rating,
       'role': 'doctor',
     };
   }

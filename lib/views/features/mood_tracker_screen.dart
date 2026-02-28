@@ -19,8 +19,6 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
   MoodScanState _currentState = MoodScanState.initial;
   String? _detectedMood;
   CameraController? _cameraController;
-  VideoPlayerController? _videoController;
-  bool _isVideoInitialized = false;
   bool _isCameraInitialized = false;
   final _aiController = MoodTrackerController();
   FlashMode _flashMode = FlashMode.off;
@@ -50,7 +48,6 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
   @override
   void dispose() {
     _cameraController?.dispose();
-    _videoController?.dispose();
     super.dispose();
   }
 
@@ -87,27 +84,6 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
     }
   }
 
-  Future<void> _initializeVideo() async {
-    _videoController = VideoPlayerController.asset('video/WhatsApp Video 2026-02-27 at 10.07.37 PM.mp4');
-    try {
-      await _videoController!.initialize();
-      _videoController!.setLooping(false);
-      await _videoController!.play();
-      
-      if (mounted) {
-        setState(() => _isVideoInitialized = true);
-        
-        // Simulate detection after 5 seconds of video
-        Future.delayed(const Duration(seconds: 5), () {
-          if (mounted && _currentState == MoodScanState.scanning && _isVideoInitialized) {
-            _processAutoDetection("Neutral"); // Simulate a detection
-          }
-        });
-      }
-    } catch (e) {
-      debugPrint("Video init error: $e");
-    }
-  }
 
   
 
@@ -168,12 +144,6 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
     }
   }
 
-  void _startVideoScan() async {
-    await _initializeVideo();
-    if (_isVideoInitialized) {
-      setState(() => _currentState = MoodScanState.scanning);
-    }
-  }
 
 
   void _resetScan() {
@@ -247,12 +217,6 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
               label: SettingsController().tr("AI Scan Face"),
               icon: Icons.face_retouching_natural,
             ),
-            const SizedBox(height: 16),
-            _buildActionButton(
-              onPressed: _startVideoScan,
-              label: SettingsController().tr("Use Sample Video"),
-              icon: Icons.video_library,
-            ),
           ],
         ),
       ),
@@ -260,169 +224,110 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
   }
 
   Widget _buildCameraView() {
-    if (!_isCameraInitialized && !_isVideoInitialized) {
+    if (!_isCameraInitialized) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (_isCameraInitialized && _cameraController != null) {
-      return Stack(
-        children: [
-          // Full screen camera
-          Positioned.fill(
-            child: AspectRatio(
-              aspectRatio: _cameraController!.value.aspectRatio,
-              child: CameraPreview(_cameraController!),
+    return Stack(
+      children: [
+        // Full screen camera
+        Positioned.fill(
+          child: AspectRatio(
+            aspectRatio: _cameraController!.value.aspectRatio,
+            child: CameraPreview(_cameraController!),
+          ),
+        ),
+        // Scan Overlay UI
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.white.withOpacity(0.2), width: 40),
+            ),
+            child: Center(
+              child: Container(
+                width: 250,
+                height: 350,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.white, width: 2),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
             ),
           ),
-          // Scan Overlay UI
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.white.withOpacity(0.2), width: 40),
+        ),
+        // Bottom Controls
+        Positioned(
+          bottom: 100,
+          left: 0,
+          right: 0,
+          child: Column(
+            children: [
+              Text(
+                _currentConfidence > 0.3 ? SettingsController().tr("Face Detected! Analyzing...") : SettingsController().tr("Center your face in the frame"),
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18, shadows: [Shadow(blurRadius: 10)]),
               ),
-              child: Center(
-                child: Container(
-                  width: 250,
-                  height: 350,
+              const SizedBox(height: 10),
+              Text(
+                SettingsController().tr("Keep still for a moment"),
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
+              ),
+            ],
+          ),
+        ),
+        // Debug Info and Rotation Cycle Button
+        Positioned(
+          top: 60,
+          right: 20,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (_currentDetectedLabel != null)
+                Container(
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white, width: 2),
-                    borderRadius: BorderRadius.circular(30),
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    "Debug: $_currentDetectedLabel (${(_currentConfidence * 100).toStringAsFixed(1)}%)",
+                    style: const TextStyle(color: Colors.greenAccent, fontSize: 13, fontWeight: FontWeight.bold),
                   ),
                 ),
-              ),
-            ),
-          ),
-          // Bottom Controls
-          Positioned(
-            bottom: 100,
-            left: 0,
-            right: 0,
-            child: Column(
-              children: [
-                Text(
-                  _currentConfidence > 0.3 ? SettingsController().tr("Face Detected! Analyzing...") : SettingsController().tr("Center your face in the frame"),
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18, shadows: [Shadow(blurRadius: 10)]),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  SettingsController().tr("Keep still for a moment"),
-                  style: const TextStyle(color: Colors.white70, fontSize: 14),
-                ),
-              ],
-            ),
-          ),
-          // Debug Info and Rotation Cycle Button
-          Positioned(
-            top: 60,
-            right: 20,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                if (_currentDetectedLabel != null)
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.black54,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      "Debug: $_currentDetectedLabel (${(_currentConfidence * 100).toStringAsFixed(1)}%)",
-                      style: const TextStyle(color: Colors.greenAccent, fontSize: 13, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                const SizedBox(height: 10),
-                GestureDetector(
-                  onTap: _cycleRotation,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.blueAccent.withOpacity(0.8),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.screen_rotation, color: Colors.white, size: 16),
-                        const SizedBox(width: 4),
-                        Text(
-                          "AI Rot: $_debugRotation°",
-                          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Back Button
-          Positioned(
-            top: 20,
-            left: 20,
-            child: IconButton(
-              icon: const Icon(Icons.close, color: Colors.white, size: 30),
-              onPressed: _resetScan,
-            ),
-          ),
-        ],
-      );
-    } else if (_isVideoInitialized && _videoController != null) {
-      return Stack(
-        children: [
-          Positioned.fill(
-            child: AspectRatio(
-              aspectRatio: _videoController!.value.aspectRatio,
-              child: VideoPlayer(_videoController!),
-            ),
-          ),
-          // Scan Overlay UI
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.white.withOpacity(0.2), width: 40),
-              ),
-              child: Center(
+              const SizedBox(height: 10),
+              GestureDetector(
+                onTap: _cycleRotation,
                 child: Container(
-                  width: 250,
-                  height: 350,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white, width: 2),
-                    borderRadius: BorderRadius.circular(30),
+                    color: Colors.blueAccent.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.screen_rotation, color: Colors.white, size: 16),
+                      const SizedBox(width: 4),
+                      Text(
+                        "AI Rot: $_debugRotation°",
+                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ),
+            ],
           ),
-          // Bottom Controls
-          Positioned(
-            bottom: 100,
-            left: 0,
-            right: 0,
-            child: Column(
-              children: [
-                Text(
-                  SettingsController().tr("Analyzing Video Feed..."),
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18, shadows: [Shadow(blurRadius: 10)]),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  SettingsController().tr("AI processing in progress"),
-                  style: const TextStyle(color: Colors.white70, fontSize: 14),
-                ),
-              ],
-            ),
+        ),
+        // Back Button
+        Positioned(
+          top: 20,
+          left: 20,
+          child: IconButton(
+            icon: const Icon(Icons.close, color: Colors.white, size: 30),
+            onPressed: _resetScan,
           ),
-          // Back Button
-          Positioned(
-            top: 20,
-            left: 20,
-            child: IconButton(
-              icon: const Icon(Icons.close, color: Colors.white, size: 30),
-              onPressed: _resetScan,
-            ),
-          ),
-        ],
-      );
-    }
+        ),
+      ],
+    );
     return const Center(child: Text('Media not initialized'));
   }
 

@@ -7,14 +7,14 @@ class AboutScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('About App')),
-      body: const Center(
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.health_and_safety_outlined, size: 100, color: Color(0xFFF48FB1)),
-            SizedBox(height: 16),
-            Text(
-              'Maternal Child Health Tracker',
+            Image.asset('assets/images/logo.png', height: 100),
+            const SizedBox(height: 16),
+            const Text(
+              'M.O.M (Maternal Operational Monitoring)',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             Text('Version 1.0.0', style: TextStyle(color: Colors.grey)),

@@ -10,20 +10,20 @@ class SignupStep3 extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Select Doctor')),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          children: [
-            _buildTimeline(3),
-            const SizedBox(height: 30),
-            const Text(
-              'Select your registered doctor from the list below to complete registration.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: StreamBuilder<List<DoctorModel>>(
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            children: [
+              _buildTimeline(3),
+              const SizedBox(height: 30),
+              const Text(
+                'Select your registered doctor from the list below to complete registration.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 20),
+              StreamBuilder<List<DoctorModel>>(
                 stream: PatientController().getDoctorsStream(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -45,6 +45,8 @@ class SignupStep3 extends StatelessWidget {
                   }
 
                   return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
                     itemCount: doctors.length,
                     itemBuilder: (context, index) {
                       final doctor = doctors[index];
@@ -58,16 +60,16 @@ class SignupStep3 extends StatelessWidget {
                   );
                 },
               ),
-            ),
-            const SizedBox(height: 20),
-            TextButton(
-              onPressed: () => PatientController().registerPatient(context),
-              child: Text(
-                'Skip / Register without Doctor',
-                style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold),
+              const SizedBox(height: 20),
+              TextButton(
+                onPressed: () => PatientController().registerPatient(context),
+                child: Text(
+                  'Skip / Register without Doctor',
+                  style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -108,13 +110,13 @@ class SignupStep3 extends StatelessWidget {
           backgroundColor: const Color(0xFFF48FB1),
           child: const Text('1', style: TextStyle(color: Colors.white, fontSize: 12)),
         ),
-        Container(width: 40, height: 2, color: const Color(0xFFF48FB1)),
+        Expanded(child: Container(height: 2, color: const Color(0xFFF48FB1))),
         CircleAvatar(
           radius: 15,
           backgroundColor: const Color(0xFFF48FB1),
           child: const Text('2', style: TextStyle(color: Colors.white, fontSize: 12)),
         ),
-        Container(width: 40, height: 2, color: const Color(0xFFF48FB1)),
+        Expanded(child: Container(height: 2, color: const Color(0xFFF48FB1))),
         CircleAvatar(
           radius: 15,
           backgroundColor: const Color(0xFFF48FB1),

@@ -48,6 +48,8 @@ class PatientController {
     required double height,
     required List<String> conditions,
     required String diet,
+    required String bloodGroup,
+    String? allergies,
   }) {
     if (currentPatient != null) {
       currentPatient!.pregnancyWeek = week;
@@ -55,6 +57,8 @@ class PatientController {
       currentPatient!.height = height;
       currentPatient!.medicalConditions = conditions;
       currentPatient!.diet = diet;
+      currentPatient!.bloodGroup = bloodGroup;
+      currentPatient!.allergies = allergies;
     }
   }
 
@@ -89,14 +93,28 @@ class PatientController {
       );
 
       if (userCredential.user != null) {
+        debugPrint("User created successfully: ${userCredential.user!.uid}");
         currentPatient!.uid = userCredential.user!.uid;
+        
+        debugPrint("Saving patient data to Firestore...");
         await _db.collection('users').doc(userCredential.user!.uid).set(
           currentPatient!.toMap()
         );
+        debugPrint("Patient data saved.");
 
-        if (context.mounted) Navigator.pop(context);
+        // Clean up temp data
+        tempPassword = null;
 
         if (context.mounted) {
+          debugPrint("Popping loading dialog...");
+          Navigator.of(context, rootNavigator: true).pop();
+        }
+
+        // Small delay to allow Firestore state to stabilize
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        if (context.mounted) {
+          debugPrint("Redirecting to dashboard...");
           Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
         }
       }

@@ -19,6 +19,8 @@ class PatientModel {
   String? hospitalAddress;
   String? photoUrl;
   String? diet; // Vegetarian or Non-Veg
+  String? bloodGroup;
+  String? allergies;
   bool? isWorkingProfessional;
   bool? isHighRisk;
   bool? isFirstBaby;
@@ -49,6 +51,8 @@ class PatientModel {
     this.hospitalAddress,
     this.photoUrl,
     this.diet,
+    this.bloodGroup,
+    this.allergies,
     this.isWorkingProfessional,
     this.isHighRisk,
     this.isFirstBaby,
@@ -81,6 +85,8 @@ class PatientModel {
       'hospitalAddress': hospitalAddress,
       'photoUrl': photoUrl,
       'diet': diet,
+      'bloodGroup': bloodGroup,
+      'allergies': allergies,
       'isWorkingProfessional': isWorkingProfessional,
       'isHighRisk': isHighRisk,
       'isFirstBaby': isFirstBaby,
@@ -115,6 +121,8 @@ class PatientModel {
       hospitalAddress: map['hospitalAddress'],
       photoUrl: map['photoUrl'],
       diet: map['diet'],
+      bloodGroup: map['bloodGroup'],
+      allergies: map['allergies'],
       isWorkingProfessional: map['isWorkingProfessional'],
       isHighRisk: map['isHighRisk'],
       isFirstBaby: map['isFirstBaby'],

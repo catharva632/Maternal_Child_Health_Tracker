@@ -145,6 +145,12 @@ class AuthController {
     return doc.data();
   }
 
+  Stream<Map<String, dynamic>?> getProfileStream() {
+    final user = _auth.currentUser;
+    if (user == null) return Stream.value(null);
+    return _db.collection('users').doc(user.uid).snapshots().map((snapshot) => snapshot.data());
+  }
+
   Future<void> signOut(BuildContext context) async {
     await _googleSignIn.signOut();
     await _auth.signOut();

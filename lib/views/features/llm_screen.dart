@@ -229,7 +229,6 @@ class _LlmScreenState extends State<LlmScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
 
       appBar: AppBar(
         backgroundColor: const Color(0xFFF48FB1), // Pink Theme
@@ -241,7 +240,7 @@ class _LlmScreenState extends State<LlmScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(SettingsController().tr("Maternal Health Tracker"), 
+            Text(SettingsController().tr("M.O.M (Maternal Operational Monitoring)"), 
               style: const TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
             Text(SettingsController().tr("AI Assistant"),
                 style: const TextStyle(fontSize: 12, color: Colors.white70)),
@@ -323,14 +322,14 @@ class _LlmScreenState extends State<LlmScreen> {
                                     decoration: BoxDecoration(
                                       color: isUser
                                           ? const Color(0xFFF48FB1)
-                                          : const Color(0xFFFCE4EC), // Soft Pink for Bot
+                                          : Theme.of(context).cardColor, 
                                       borderRadius:
                                           BorderRadius.circular(16),
                                     ),
                                     child: SelectableText(
                                       msg["text"],
                                       style: TextStyle(
-                                          color: isUser ? Colors.white : Colors.black87,
+                                          color: isUser ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
                                           fontSize: 15),
                                     ),
                                   ),
@@ -385,7 +384,7 @@ class _LlmScreenState extends State<LlmScreen> {
                       child: TextField(
                         controller: _controller,
                         style:
-                            const TextStyle(color: Colors.black87),
+                            TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
                         decoration: InputDecoration(
                           hintText: SettingsController().tr("Type a message..."),
                           hintStyle:
@@ -397,7 +396,7 @@ class _LlmScreenState extends State<LlmScreen> {
                           ),
                           filled: true,
                           fillColor:
-                              const Color(0xFFF5F5F5), // Light Grey Fill
+                              Theme.of(context).cardColor, 
                           border: OutlineInputBorder(
                             borderRadius:
                                 BorderRadius.circular(24),

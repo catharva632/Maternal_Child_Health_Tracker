@@ -37,6 +37,23 @@ class DoctorCard extends StatelessWidget {
                     Text(doctor.address, style: const TextStyle(color: Colors.grey, fontSize: 12)),
                     const SizedBox(height: 4),
                     Text(doctor.phone, style: const TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w500)),
+                    if (doctor.distance != null || doctor.rating != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: Row(
+                          children: [
+                            if (doctor.rating != null) ...[
+                              const Icon(Icons.star, size: 14, color: Colors.amber),
+                              Text(' ${doctor.rating}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                              const SizedBox(width: 12),
+                            ],
+                            if (doctor.distance != null) ...[
+                              const Icon(Icons.location_on, size: 14, color: Colors.grey),
+                              Text(' ${doctor.distance}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                            ],
+                          ],
+                        ),
+                      ),
                   ],
                 ),
               ),

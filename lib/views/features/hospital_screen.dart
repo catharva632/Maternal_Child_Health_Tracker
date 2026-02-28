@@ -77,7 +77,7 @@ class HospitalScreen extends StatelessWidget {
                   ),
                   const Text('Consulting Pediatrician/OB-GYN', style: TextStyle(color: Colors.grey, fontSize: 12)),
                   if (patient?.doctorName != null)
-                    const Text('Assigned via Maternal Tracker', style: TextStyle(fontSize: 10)),
+                    const Text('Assigned via M.O.M', style: TextStyle(fontSize: 10)),
                 ],
               ),
             ),

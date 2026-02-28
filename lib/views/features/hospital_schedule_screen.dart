@@ -59,7 +59,6 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
         }
 
         return Scaffold(
-          backgroundColor: Colors.white,
           body: SafeArea(
             child: Column(
               children: [
@@ -85,13 +84,16 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
   }
 
   Widget _buildDoctorCard(PatientModel? patient, String doctorName, String hospitalName, String doctorPhone, String hospitalLocation, int week) {
+    final size = MediaQuery.of(context).size;
+    final bool isSmallHeight = size.height < 700;
+    
     return Container(
-      height: MediaQuery.of(context).size.height * 0.3,
+      height: isSmallHeight ? size.height * 0.35 : size.height * 0.3,
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(30),
         gradient: const LinearGradient(
-          colors: [Color(0xFFE91E63), Color(0xFFC2185B)], // Professional Deep Pink to Crimson
+          colors: [Color(0xFFE91E63), Color(0xFFC2185B)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -103,7 +105,7 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
           ),
         ],
       ),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -112,17 +114,17 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
             children: [
               Text(
                 SettingsController().tr('Your Doctor'),
-                style: const TextStyle(color: Colors.white70, fontSize: 16),
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   '${SettingsController().tr('Week')} $week',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
                 ),
               ),
             ],
@@ -130,46 +132,50 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
           const SizedBox(height: 8),
           Text(
             doctorName,
-            style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+            style: TextStyle(color: Colors.white, fontSize: isSmallHeight ? 20 : 24, fontWeight: FontWeight.bold),
+            overflow: TextOverflow.ellipsis,
           ),
           Text(
             hospitalName,
-            style: const TextStyle(color: Colors.white, fontSize: 16),
+            style: const TextStyle(color: Colors.white, fontSize: 14),
+            overflow: TextOverflow.ellipsis,
           ),
           const Spacer(),
           Text(
             SettingsController().tr('Next Appointment'),
-            style: const TextStyle(color: Colors.white70, fontSize: 14),
+            style: const TextStyle(color: Colors.white70, fontSize: 12),
           ),
           Text(
             SettingsController().tr(_getNextAppointmentDate(patient?.appointments ?? [])),
-            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () => _makeCall(doctorPhone),
-                  icon: const Icon(Icons.call, size: 18),
-                  label: Text(SettingsController().tr('Call Doctor')),
+                  icon: const Icon(Icons.call, size: 16),
+                  label: FittedBox(child: Text(SettingsController().tr('Call Doctor'))),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).cardColor,
                     foregroundColor: const Color(0xFFE91E63),
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                     elevation: 0,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () => _launchUrl(hospitalLocation),
-                  icon: const Icon(Icons.local_hospital, size: 18),
-                  label: Text(SettingsController().tr('View Hospital')),
+                  icon: const Icon(Icons.local_hospital, size: 16),
+                  label: FittedBox(child: Text(SettingsController().tr('View Hospital'))),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white.withOpacity(0.2),
                     foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                     elevation: 0,
                   ),
@@ -248,7 +254,6 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
         return Card(
           elevation: 0,
           margin: const EdgeInsets.only(bottom: 12),
-          color: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
             side: BorderSide(color: Colors.grey.withOpacity(0.1)),
@@ -342,7 +347,6 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
     return Card(
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 12),
-      color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(color: Colors.grey.withOpacity(0.1)),
@@ -377,7 +381,6 @@ class _HospitalScheduleScreenState extends State<HospitalScheduleScreen> with Si
       padding: const EdgeInsets.all(16),
       child: Card(
         elevation: 0,
-        color: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(30),
           side: BorderSide(color: Colors.grey.withOpacity(0.1)),

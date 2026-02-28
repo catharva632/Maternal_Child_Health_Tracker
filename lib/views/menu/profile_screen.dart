@@ -23,6 +23,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late TextEditingController _cityController;
   late TextEditingController _pincodeController;
   late TextEditingController _stateController;
+  late TextEditingController _abhaIdController;
+  late TextEditingController _allergiesController;
+  final List<String> _bloodGroups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
+  String? _selectedBloodGroup;
 
   // Medical Details
   late TextEditingController _weekController;
@@ -38,6 +42,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late TextEditingController _hospitalNameController;
   late TextEditingController _hospitalAddressController;
   late TextEditingController _hospitalPhoneController;
+  
+  String _diet = 'Vegetarian';
+  bool _isWorking = false;
+  bool _isHighRisk = false;
+  bool _isFirstBaby = false;
   
   bool _isInit = true;
   String? _uid;
@@ -60,6 +69,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _hospitalNameController.dispose();
     _hospitalAddressController.dispose();
     _hospitalPhoneController.dispose();
+    _abhaIdController.dispose();
+    _allergiesController.dispose();
     super.dispose();
   }
 
@@ -72,6 +83,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _cityController = TextEditingController(text: patient.city);
     _pincodeController = TextEditingController(text: patient.pincode);
     _stateController = TextEditingController(text: patient.state);
+    _abhaIdController = TextEditingController(text: patient.abhaId);
+    _allergiesController = TextEditingController(text: patient.allergies ?? '');
+    _selectedBloodGroup = patient.bloodGroup;
     
     _weekController = TextEditingController(text: patient.pregnancyWeek.toString());
     _ageController = TextEditingController(text: patient.age.toString());
@@ -84,6 +98,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _hospitalNameController = TextEditingController(text: patient.hospitalName ?? '');
     _hospitalAddressController = TextEditingController(text: patient.hospitalAddress ?? '');
     _hospitalPhoneController = TextEditingController(text: patient.hospitalPhone ?? '');
+
+    _diet = patient.diet ?? 'Vegetarian';
+    _isWorking = patient.isWorkingProfessional ?? false;
+    _isHighRisk = patient.isHighRisk ?? false;
+    _isFirstBaby = patient.isFirstBaby ?? false;
   }
 
   Future<void> _saveProfile() async {
@@ -102,9 +121,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         'medicalConditions': _selectedConditions,
         'doctorName': _doctorNameController.text,
         'doctorPhone': _doctorPhoneController.text,
-        'hospitalName': _hospitalNameController.text,
-        'hospitalAddress': _hospitalAddressController.text,
-        'hospitalPhone': _hospitalPhoneController.text,
+        'hospitalName': _doctorNameController.text.isNotEmpty ? _hospitalNameController.text : null,
+        'hospitalAddress': _doctorNameController.text.isNotEmpty ? _hospitalAddressController.text : null,
+        'hospitalPhone': _doctorNameController.text.isNotEmpty ? _hospitalPhoneController.text : null,
+        'abhaId': _abhaIdController.text,
+        'diet': _diet,
+        'isWorkingProfessional': _isWorking,
+        'isHighRisk': _isHighRisk,
+        'isFirstBaby': _isFirstBaby,
+        'bloodGroup': _selectedBloodGroup,
+        'allergies': _allergiesController.text,
       };
       await ProfileController().updateProfile(context, _uid!, data);
     }
@@ -150,9 +176,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         CircleAvatar(
                           radius: 60,
                           backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-                          backgroundImage: patient.photoUrl != null 
-                            ? NetworkImage(patient.photoUrl!) 
-                            : null,
+                          backgroundImage: ProfileController.getImageProvider(patient.photoUrl),
                           child: patient.photoUrl == null 
                             ? const Icon(Icons.person, size: 60) 
                             : null,
@@ -182,6 +206,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
                   _buildField(_stateController, 'State'),
+                  _buildField(_abhaIdController, 'ABHA ID'),
                   
                   const SizedBox(height: 32),
                   _buildSectionHeader(_settings.tr('Medical Details')),
@@ -199,6 +224,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(width: 10),
                       Expanded(child: _buildField(_heightController, 'Height (cm)', isNumber: true)),
                     ],
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: _selectedBloodGroup,
+                    decoration: InputDecoration(
+                      labelText: _settings.tr('Blood Group'),
+                      prefixIcon: const Icon(Icons.bloodtype_outlined),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    items: _bloodGroups.map((bg) {
+                      return DropdownMenuItem(value: bg, child: Text(bg));
+                    }).toList(),
+                    onChanged: (value) => setState(() => _selectedBloodGroup = value),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _allergiesController,
+                    maxLines: 3,
+                    minLines: 1,
+                    decoration: InputDecoration(
+                      labelText: _settings.tr('Allergies / Generic Disease (Optional)'),
+                      prefixIcon: const Icon(Icons.warning_amber_outlined),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      hintText: _settings.tr('List any allergies or diseases...'),
+                    ),
                   ),
                   const SizedBox(height: 16),
                   const Text('Medical Conditions', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
@@ -226,6 +276,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         },
                       );
                     }).toList(),
+                  ),
+
+                  const SizedBox(height: 24),
+                  const Text('Additional Information', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    value: _diet,
+                    decoration: InputDecoration(
+                      labelText: 'Diet Preference',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    items: ['Vegetarian', 'Non-Veg'].map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (val) => setState(() => _diet = val!),
+                  ),
+                  const SizedBox(height: 16),
+                  SwitchListTile(
+                    title: const Text('Working Professional'),
+                    value: _isWorking,
+                    onChanged: (val) => setState(() => _isWorking = val),
+                  ),
+                  SwitchListTile(
+                    title: const Text('High Risk Pregnancy'),
+                    value: _isHighRisk,
+                    onChanged: (val) => setState(() => _isHighRisk = val),
+                  ),
+                  SwitchListTile(
+                    title: const Text('First Baby'),
+                    value: _isFirstBaby,
+                    onChanged: (val) => setState(() => _isFirstBaby = val),
                   ),
 
                   const SizedBox(height: 40),
@@ -278,7 +362,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         decoration: InputDecoration(
           labelText: label,
           filled: !enabled,
-          fillColor: enabled ? null : Colors.grey.shade100,
+          fillColor: enabled ? null : Theme.of(context).disabledColor.withOpacity(0.05),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         ),
         validator: enabled ? (val) => val!.isEmpty ? 'Enter $label' : null : null,

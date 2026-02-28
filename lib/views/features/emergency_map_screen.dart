@@ -110,7 +110,7 @@ class _EmergencyMapScreenState extends State<EmergencyMapScreen> {
         margin: const EdgeInsets.all(20),
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, -5)),
@@ -160,12 +160,9 @@ class _EmergencyMapScreenState extends State<EmergencyMapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(SettingsController().tr('Emergency Assistance'), style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
+        title: Text(SettingsController().tr('Emergency Assistance'), style: const TextStyle(fontWeight: FontWeight.bold)),
         elevation: 0,
-        leading: const BackButton(color: Colors.black),
       ),
       body: StreamBuilder<PatientModel?>(
         stream: PatientController().getPatientStream(),
@@ -199,65 +196,70 @@ class _EmergencyMapScreenState extends State<EmergencyMapScreen> {
                 ),
               ),
 
-              // SOS & Quick Contacts Section (30% of screen height)
+              // SOS & Quick Contacts Section
               Expanded(
-                flex: 3,
+                flex: 4,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      // SOS Button
-                      GestureDetector(
-                        onTap: () {
-                          if (patient != null) {
-                            SOSController().startSOS(patient);
-                            _showSOSStatusDialog(context);
-                          }
-                        },
-                        child: Container(
-                          height: 90,
-                          width: 90,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: const LinearGradient(
-                              colors: [Colors.red, Color(0xFFD32F2F)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.red.withOpacity(0.4),
-                                blurRadius: 25,
-                                spreadRadius: 5,
-                                offset: const Offset(0, 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start, // Changed from spaceEvenly
+                      children: [
+                        const SizedBox(height: 16), // Added spacing
+                        // SOS Button
+                        GestureDetector(
+                          onTap: () {
+                            if (patient != null) {
+                              SOSController().startSOS(patient);
+                              _showSOSStatusDialog(context);
+                            }
+                          },
+                          child: Container(
+                            height: 90,
+                            width: 90,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: const LinearGradient(
+                                colors: [Colors.red, Color(0xFFD32F2F)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
-                            ],
-                          ),
-                          child: const Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text('*', style: TextStyle(color: Colors.white, fontSize: 32, height: 0.5)),
-                                Text('SOS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.red.withOpacity(0.4),
+                                  blurRadius: 25,
+                                  spreadRadius: 5,
+                                  offset: const Offset(0, 8),
+                                ),
                               ],
+                            ),
+                            child: const Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text('*', style: TextStyle(color: Colors.white, fontSize: 32, height: 0.5)),
+                                  Text('SOS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      
-                      const Text('Quick Emergency Contacts', 
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          _buildQuickContact(SettingsController().tr('Ambulance'), Icons.airport_shuttle, '108'),
-                          _buildQuickContact(SettingsController().tr('My Hospital'), Icons.local_hospital, patient?.hospitalPhone ?? ''),
-                          _buildQuickContact(SettingsController().tr('My Doctor'), Icons.person, patient?.doctorPhone ?? ''),
-                        ],
-                      ),
-                    ],
+                        
+                        const SizedBox(height: 16), // Added spacing
+                        const Text('Quick Emergency Contacts', 
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        const SizedBox(height: 12), // Added spacing
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            _buildQuickContact(SettingsController().tr('Ambulance'), Icons.airport_shuttle, '108'),
+                            _buildQuickContact(SettingsController().tr('My Hospital'), Icons.local_hospital, patient?.hospitalPhone ?? ''),
+                            _buildQuickContact(SettingsController().tr('My Doctor'), Icons.person, patient?.doctorPhone ?? ''),
+                          ],
+                        ),
+                        const SizedBox(height: 16), // Added spacing
+                      ],
+                    ),
                   ),
                 ),
               ),

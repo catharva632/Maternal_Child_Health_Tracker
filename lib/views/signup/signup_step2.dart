@@ -13,9 +13,12 @@ class _SignupStep2State extends State<SignupStep2> {
   final _weekController = TextEditingController();
   final _weightController = TextEditingController();
   final _heightController = TextEditingController();
+  final _allergiesController = TextEditingController();
+  final List<String> _bloodGroups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
   final List<String> _allConditions = ['None', 'Diabetes', 'Thyroid', 'Anemia', 'High BP'];
   final List<String> _selectedConditions = [];
   String? _selectedDiet;
+  String? _selectedBloodGroup;
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +45,31 @@ class _SignupStep2State extends State<SignupStep2> {
                 return DropdownMenuItem(value: diet, child: Text(diet));
               }).toList(),
               onChanged: (value) => setState(() => _selectedDiet = value),
+            ),
+            const SizedBox(height: 15),
+            DropdownButtonFormField<String>(
+              value: _selectedBloodGroup,
+              decoration: InputDecoration(
+                labelText: SettingsController().translate('Blood Group'),
+                prefixIcon: const Icon(Icons.bloodtype_outlined),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              items: _bloodGroups.map((bg) {
+                return DropdownMenuItem(value: bg, child: Text(bg));
+              }).toList(),
+              onChanged: (value) => setState(() => _selectedBloodGroup = value),
+            ),
+            const SizedBox(height: 15),
+            TextField(
+              controller: _allergiesController,
+              maxLines: 3,
+              minLines: 1,
+              decoration: InputDecoration(
+                labelText: SettingsController().translate('Allergies / Generic Disease (Optional)'),
+                prefixIcon: const Icon(Icons.warning_amber_outlined),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                hintText: SettingsController().translate('List any allergies or diseases...'),
+              ),
             ),
             const SizedBox(height: 20),
             const Align(
@@ -89,9 +117,10 @@ class _SignupStep2State extends State<SignupStep2> {
                       _weightController.text.isEmpty ||
                       _heightController.text.isEmpty ||
                       _selectedDiet == null ||
+                      _selectedBloodGroup == null ||
                       _selectedConditions.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('All fields are compulsory')),
+                      const SnackBar(content: Text('All fields except Allergies are compulsory')),
                     );
                     return;
                   }
@@ -101,6 +130,8 @@ class _SignupStep2State extends State<SignupStep2> {
                     height: double.tryParse(_heightController.text) ?? 0.0,
                     conditions: _selectedConditions,
                     diet: _selectedDiet!,
+                    bloodGroup: _selectedBloodGroup!,
+                    allergies: _allergiesController.text,
                   );
                   if (mounted) Navigator.pushNamed(context, '/signup3');
                 },
@@ -127,13 +158,13 @@ class _SignupStep2State extends State<SignupStep2> {
           backgroundColor: step >= 1 ? const Color(0xFFF48FB1) : Colors.grey.shade300,
           child: const Text('1', style: TextStyle(color: Colors.white, fontSize: 12)),
         ),
-        Container(width: 40, height: 2, color: step >= 2 ? const Color(0xFFF48FB1) : Colors.grey.shade300),
+        Expanded(child: Container(height: 2, color: step >= 2 ? const Color(0xFFF48FB1) : Colors.grey.shade300)),
         CircleAvatar(
           radius: 15,
           backgroundColor: step >= 2 ? const Color(0xFFF48FB1) : Colors.grey.shade300,
           child: const Text('2', style: TextStyle(color: Colors.white, fontSize: 12)),
         ),
-        Container(width: 40, height: 2, color: step >= 3 ? const Color(0xFFF48FB1) : Colors.grey.shade300),
+        Expanded(child: Container(height: 2, color: step >= 3 ? const Color(0xFFF48FB1) : Colors.grey.shade300)),
         CircleAvatar(
           radius: 15,
           backgroundColor: step >= 3 ? const Color(0xFFF48FB1) : Colors.grey.shade300,

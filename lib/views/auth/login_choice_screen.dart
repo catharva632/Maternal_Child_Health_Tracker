@@ -6,13 +6,19 @@ class LoginChoiceScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     return Scaffold(
-      appBar: AppBar(title: const Text('Login Choice')),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+      appBar: AppBar(title: const Text('Signup Choice')),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(height: size.height * 0.05),
+              Image.asset('assets/images/logo.png', height: size.height * 0.12),
+              SizedBox(height: size.height * 0.05),
+              SizedBox(height: size.height * 0.05),
             _buildChoiceCard(
               context,
               'Continue with Google',
@@ -37,6 +43,7 @@ class LoginChoiceScreen extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 
@@ -55,9 +62,11 @@ class LoginChoiceScreen extends StatelessWidget {
                 ? const Icon(Icons.g_mobiledata, size: 40, color: Colors.blue)
                 : Icon(icon, size: 40, color: Theme.of(context).colorScheme.primary),
               const SizedBox(width: 20),
-              Text(
-                title,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
               ),
               const Spacer(),
               const Icon(Icons.arrow_forward_ios, size: 16),

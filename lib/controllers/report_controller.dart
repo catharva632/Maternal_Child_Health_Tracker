@@ -90,7 +90,7 @@ class ReportController {
         pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Text('MATERNAL HEALTH REPORT', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold, color: PdfColors.pink)),
+            pw.Text('M.O.M MEDICAL REPORT', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold, color: PdfColors.pink)),
             pw.Text('Generated on: ${DateFormat('dd-MM-yyyy HH:mm').format(DateTime.now())}'),
           ],
         ),
@@ -222,7 +222,7 @@ class ReportController {
       child: pw.Column(
         children: [
           pw.Divider(),
-          pw.Text('This is a computer-generated medical report for maternal tracking purposes.', style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey)),
+          pw.Text('This is a computer-generated medical report for M.O.M tracking purposes.', style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey)),
           pw.Text('Consult your doctor for professional medical advice.', style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey)),
         ],
       ),

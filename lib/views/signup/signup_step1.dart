@@ -23,14 +23,18 @@ class _SignupStep1State extends State<SignupStep1> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final double padding = size.width * 0.06;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Personal Details')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          children: [
-            _buildTimeline(1),
-            const SizedBox(height: 30),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(padding),
+          child: Column(
+            children: [
+              _buildTimeline(1),
+              SizedBox(height: size.height * 0.03),
             _buildTextField(_nameController, 'Name', Icons.person_outline),
             _buildTextField(_emailController, 'Email', Icons.email_outlined),
             _buildTextField(_phoneController, 'Phone', Icons.phone_outlined, isNumber: true, maxLength: 10),
@@ -92,6 +96,7 @@ class _SignupStep1State extends State<SignupStep1> {
           ],
         ),
       ),
+    ),
     );
   }
 
@@ -104,13 +109,13 @@ class _SignupStep1State extends State<SignupStep1> {
           backgroundColor: step >= 1 ? const Color(0xFFF48FB1) : Colors.grey.shade300,
           child: const Text('1', style: TextStyle(color: Colors.white, fontSize: 12)),
         ),
-        Container(width: 40, height: 2, color: step >= 2 ? const Color(0xFFF48FB1) : Colors.grey.shade300),
+        Expanded(child: Container(height: 2, color: step >= 2 ? const Color(0xFFF48FB1) : Colors.grey.shade300)),
         CircleAvatar(
           radius: 15,
           backgroundColor: step >= 2 ? const Color(0xFFF48FB1) : Colors.grey.shade300,
           child: const Text('2', style: TextStyle(color: Colors.white, fontSize: 12)),
         ),
-        Container(width: 40, height: 2, color: step >= 3 ? const Color(0xFFF48FB1) : Colors.grey.shade300),
+        Expanded(child: Container(height: 2, color: step >= 3 ? const Color(0xFFF48FB1) : Colors.grey.shade300)),
         CircleAvatar(
           radius: 15,
           backgroundColor: step >= 3 ? const Color(0xFFF48FB1) : Colors.grey.shade300,

@@ -11,6 +11,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'views/auth/welcome_screen.dart';
 import 'views/auth/login_screen.dart';
+import 'views/auth/patient_login_screen.dart';
+import 'views/auth/doctor_login_screen.dart';
 import 'views/signup/signup_step1.dart';
 import 'views/signup/signup_step2.dart';
 import 'views/signup/signup_step3.dart';
@@ -35,6 +37,8 @@ import 'views/features/badges_screen.dart';
 import 'views/features/cultural_wisdom_screen.dart';
 
 import 'views/auth/auth_wrapper.dart';
+import 'views/auth/signup_choice_screen.dart';
+import 'views/auth/login_choice_screen.dart';
 
 // Debug flag to bypass authentication flow for testing Mood Tracker
 const bool kBypassAuth = false;
@@ -65,17 +69,17 @@ void main() async {
   // Register background callback for home widget
   HomeWidget.registerBackgroundCallback(homeWidgetBackgroundCallback);
   
-  runApp(const MaternalHealthTrackerApp());
+  runApp(const MOMApp());
 }
 
-class MaternalHealthTrackerApp extends StatefulWidget {
-  const MaternalHealthTrackerApp({super.key});
+class MOMApp extends StatefulWidget {
+  const MOMApp({super.key});
 
   @override
-  State<MaternalHealthTrackerApp> createState() => _MaternalHealthTrackerAppState();
+  State<MOMApp> createState() => _MOMAppState();
 }
 
-class _MaternalHealthTrackerAppState extends State<MaternalHealthTrackerApp> {
+class _MOMAppState extends State<MOMApp> {
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
   @override
@@ -115,8 +119,9 @@ class _MaternalHealthTrackerAppState extends State<MaternalHealthTrackerApp> {
           builder: (context, lang, child) {
             return MaterialApp(
               key: ValueKey(lang), // Force rebuild of the entire app on language change
+              debugShowCheckedModeBanner: false,
               navigatorKey: _navigatorKey,
-              title: 'Maternal Child Health Tracker',
+              title: 'M.O.M (Maternal Operational Monitoring)',
               themeMode: themeMode,
               theme: _buildLightTheme(),
               darkTheme: _buildDarkTheme(),
@@ -170,6 +175,10 @@ class _MaternalHealthTrackerAppState extends State<MaternalHealthTrackerApp> {
   Map<String, WidgetBuilder> _getRoutes() {
     return {
       '/login': (context) => const LoginScreen(),
+      '/patientLogin': (context) => const PatientLoginScreen(),
+      '/doctorLogin': (context) => const DoctorLoginScreen(),
+      '/loginChoice': (context) => const LoginChoiceScreen(),
+      '/signupChoice': (context) => const SignupChoiceScreen(),
       '/signup1': (context) => const SignupStep1(),
       '/signup2': (context) => const SignupStep2(),
       '/signup3': (context) => const SignupStep3(),

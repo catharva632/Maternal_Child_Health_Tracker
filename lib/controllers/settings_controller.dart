@@ -132,7 +132,7 @@ class SettingsController {
     'Breakfast': {
       'English': 'Breakfast',
       'Hindi': 'नाश्ता',
-      'Marathi': 'नाश्ता',
+      'Marathi': 'न्याहारी',
     },
     'Lunch': {
       'English': 'Lunch',
@@ -299,21 +299,6 @@ class SettingsController {
       'Hindi': 'दिन',
       'Marathi': 'दिवस',
     },
-    'Breakfast': {
-      'English': 'Breakfast',
-      'Hindi': 'नाश्ता',
-      'Marathi': 'न्याहारी',
-    },
-    'Lunch': {
-      'English': 'Lunch',
-      'Hindi': 'दोपहर का भोजन',
-      'Marathi': 'दुपारचे जेवण',
-    },
-    'Dinner': {
-      'English': 'Dinner',
-      'Hindi': 'रात का खाना',
-      'Marathi': 'रात्रीचे जेवण',
-    },
     'Mon': {'English': 'Mon', 'Hindi': 'सोम', 'Marathi': 'सोम'},
     'Tue': {'English': 'Tue', 'Hindi': 'मंगल', 'Marathi': 'मंगळ'},
     'Wed': {'English': 'Wed', 'Hindi': 'बुध', 'Marathi': 'बुध'},
@@ -376,8 +361,8 @@ class SettingsController {
       'Hindi': 'आपके लिए डिजिटल लाइब्रेरी',
       'Marathi': 'तुमच्यासाठी डिजिटल लायब्ररी',
     },
-    'Maternal Health Tracker': {
-      'English': 'Maternal Health Tracker',
+    'M.O.M (Maternal Operational Monitoring)': {
+      'English': 'M.O.M (Maternal Operational Monitoring)',
       'Hindi': 'मातृ स्वास्थ्य ट्रैकर',
       'Marathi': 'मातृ आरोग्य ट्रॅकर',
     },

@@ -17,6 +17,8 @@ class _PatientEditScreenState extends State<PatientEditScreen> {
   late TextEditingController _heightController;
   late TextEditingController _cityController;
   late TextEditingController _phoneController;
+  late TextEditingController _bloodGroupController;
+  late TextEditingController _allergiesController;
   bool _isLoading = false;
 
   @override
@@ -28,6 +30,8 @@ class _PatientEditScreenState extends State<PatientEditScreen> {
     _heightController = TextEditingController(text: widget.patient.height.toString());
     _cityController = TextEditingController(text: widget.patient.city);
     _phoneController = TextEditingController(text: widget.patient.phone);
+    _bloodGroupController = TextEditingController(text: widget.patient.bloodGroup ?? '');
+    _allergiesController = TextEditingController(text: widget.patient.allergies ?? '');
   }
 
   Future<void> _handleUpdate() async {
@@ -40,6 +44,8 @@ class _PatientEditScreenState extends State<PatientEditScreen> {
         'height': double.tryParse(_heightController.text) ?? widget.patient.height,
         'city': _cityController.text,
         'phone': _phoneController.text,
+        'bloodGroup': _bloodGroupController.text,
+        'allergies': _allergiesController.text,
       };
       
       await PatientController().updatePatientMetadata(widget.patient.uid!, updates);
@@ -75,6 +81,8 @@ class _PatientEditScreenState extends State<PatientEditScreen> {
             _buildField(_weightController, 'Weight (kg)', Icons.monitor_weight_outlined, isNumber: true),
             _buildField(_heightController, 'Height (cm)', Icons.height_outlined, isNumber: true),
             _buildField(_cityController, 'City', Icons.location_city_outlined),
+            _buildField(_bloodGroupController, 'Blood Group', Icons.bloodtype_outlined),
+            _buildField(_allergiesController, 'Allergies / Generic Disease', Icons.warning_amber_outlined, maxLines: 3),
             const SizedBox(height: 40),
             SizedBox(
               width: double.infinity,
@@ -86,7 +94,7 @@ class _PatientEditScreenState extends State<PatientEditScreen> {
                   foregroundColor: Colors.white,
                 ),
                 child: _isLoading 
-                  ? const CircularProgressIndicator(color: Colors.white)
+                  ? CircularProgressIndicator(color: Theme.of(context).colorScheme.onPrimary)
                   : const Text('Update Profile', style: TextStyle(fontSize: 18)),
               ),
             ),
@@ -96,16 +104,18 @@ class _PatientEditScreenState extends State<PatientEditScreen> {
     );
   }
 
-  Widget _buildField(TextEditingController controller, String label, IconData icon, {bool isNumber = false}) {
+  Widget _buildField(TextEditingController controller, String label, IconData icon, {bool isNumber = false, int maxLines = 1}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: TextField(
         controller: controller,
+        maxLines: maxLines,
         keyboardType: isNumber ? TextInputType.number : TextInputType.text,
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon),
           border: const OutlineInputBorder(),
+          labelStyle: TextStyle(color: Theme.of(context).hintColor),
         ),
       ),
     );
